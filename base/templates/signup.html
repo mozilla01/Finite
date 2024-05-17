@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+  <head>
+    {% load static %}
+    <title>Home</title>
+    <link href={% static "styles.css" %} rel="stylesheet" type="text/css">
+  </head>
+  <body>
+      <p>Sign up</p>
+      <form method="POST" action="signup">
+          {% csrf_token %}
+          <label>username:</label>
+            <input type="text" name="username"/>
+          <label>email:</label>
+            <input type="email" name="email"/>
+            <label>password:</label>
+            <input type="password" name="password"/>
+            <input type="submit" class="bg-black text-white"/>
+      </form>
+  </body>
+</html>

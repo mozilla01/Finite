@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+  <head>
+    {% load static %}
+    <title>Home</title>
+    <link href={% static "styles.css" %} rel="stylesheet" type="text/css">
+  </head>
+  <body>
+      <form method="POST" action="login">
+          {% csrf_token %}
+          <label>username:</label>
+            <input type="text" name="username"/>
+            <label>password:</label>
+            <input type="password" name="password"/>
+            <input type="submit" class="bg-black text-white"/>
+      </form>
+      {% for message in messages %}
+      {{message}}
+      {% endfor %}
+  </body>
+</html>

@@ -1,0 +1,26 @@
+<nav class="py-4">
+    {% load static %}
+    <ul class="flex justify-center items-center gap-[5vw]">
+        <li>
+            <img src={% static "images/asterisk-thin.svg" %} alt="logo" class="w-[4vw] max-w-7" />
+        </li>
+        <li>
+            <a href="" class="hover:underline text-blue-900">Home</a>
+        </li>
+        <li>
+            <a href="" class="hover:underline text-blue-900">Profile</a>
+        </li>
+        <li>
+            {% if user.is_authenticated %}
+            <form method="POST" action="logout"
+                class="bg-gray-400 hover:bg-gray-600 p-2 rounded text-white hover:underline"
+            >
+                {% csrf_token %}
+                <input type="submit" value="Logout" />
+            </form>
+            {% else %}
+            <a href="{% url 'login' %}" class="bg-gray-400 hover:bg-gray-600 p-2 rounded text-white hover:underline">Login</a>
+            {% endif %}
+        </li>
+    </ul>
+</nav>

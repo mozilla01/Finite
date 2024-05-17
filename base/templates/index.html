@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+  <head>
+    {% load static %}
+    <title>Home</title>
+    <link href={% static "styles.css" %} rel="stylesheet" type="text/css">
+  </head>
+  <body>
+      {% include 'navbar.html' %}
+    <h1>Home</h1>
+    {% if user.is_authenticated %}
+    <p class="text-red-500">Welcome to the home page, {{user.username}}</p>
+    {% else %}
+    <p class="text-red-500">Welcome to the home page.</p>
+    {% endif %}
+    <p>Transactions</p>
+    <p>Expenses</p>
+  </body>
+</html>
