@@ -5,31 +5,34 @@
     <title>Home</title>
     <link href={% static "styles.css" %} rel="stylesheet" type="text/css">
   </head>
-  <body class="text-[2vh]">
+  <body class="text-[2vh] font-mono">
       {% include 'navbar.html' %}
       <main class="px-10 py-10">
-    <h1 class="text-4xl font-bold">Dashboard</h1>
-    {% if user.is_authenticated %}
-    <p>Welcome to the home page, {{user.username}}</p>
-    {% else %}
-    <p>Welcome to the home page.</p>
-    {% endif %}
+    <h1 class="text-[5vh] font-bold">Dashboard</h1>
+    <p class="my-2">{{user.username}}'s expenses, income and savings</p>
     <div class="flex flex-wrap justify-center">
         <div>{{expense_pie|safe}}</div>
         <div>{{income_pie|safe}}</div>
         <div>{{mixed_bar|safe}}</div>
+        <div>{{savings|safe}}</div>
     </div>
+    <section id="category-budgets">
+    </section>
+    <div class="flex flex-wrap w-full justify-evenly mb-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-[2vw]">
     <button class="bg-green-600 text-white p-1 rounded openBtn my-2">Create Category</button>
-    {% include 'create_category.html' %}
     <button class="bg-green-600 text-white p-1 rounded openBtn my-2">Add Source</button>
-    {% include 'add_source.html' %}
     <button class="bg-green-600 text-white p-1 rounded openBtn my-2">Add Expense</button>
-    {% include 'add_expense.html' %}
     <button class="bg-green-600 text-white p-1 rounded openBtn my-2">Add Income</button>
+        </div>
+    {% include 'create_category.html' %}
+    {% include 'add_source.html' %}
+    {% include 'add_expense.html' %}
     {% include 'add_income.html' %}
-    <div data-tables class="flex flex-wrap justify-center gap-4 py-6">
+    </div>
+    <div data-tables class="flex flex-wrap justify-center gap-4 border-t border-black py-6">
     <div  class="overflow-x-auto">
-    <p>Expenses</p>
+    <p class="text-4xl">Expenses</p>
     <table>
         <thead class="border">
             <th>Transaction ID</th>
@@ -40,7 +43,7 @@
         </thead>
         <tbody id="expense-table">
             {% for expense in expenses %}
-            <tr class="border hover:bg-gray-300 cursor-pointer">
+            <tr class="border hover:bg-gray-300 cursor-pointer" onclick="showTransactionDetails({{expense.id}}, {{expense.amount}}, '', '{{expense.category.id}}', '{{expense.description}}', '{{expense.date|date:"Y-m-d"}}')">
                 <td class="border">{{expense.id}}</td>
                 <td class="border">{{expense.date}}</td>
                 <td class="border">{{expense.amount}}</td>
@@ -52,7 +55,7 @@
     </table>
     </div>
     <div  class="overflow-x-auto">
-    <p>Income</p>
+    <p class="text-4xl">Income</p>
     <table>
         <thead class="border">
             <th>Transaction ID</th>
@@ -63,7 +66,7 @@
         </thead>
         <tbody id="income-table">
             {% for income in incomelist %}
-            <tr class="border hover:bg-gray-300 cursor-pointer" onclick="showTransactionDetails({{income.amount}}, '{{income.source.name}}', category=null, '{{income.description}}', '{{income.date}}')">
+            <tr class="border hover:bg-gray-300 cursor-pointer" onclick="showTransactionDetails({{income.id}}, {{income.amount}}, '{{income.source.id}}', '', '{{income.description}}', '{{income.date|date:"Y-m-d"}}')">
                 <td class="border">{{income.id}}</td>
                 <td class="border">{{income.date}}</td>
                 <td class="border">{{income.amount}}</td>

@@ -1,23 +1,23 @@
 <dialog
-    class="relative backdrop:bg-slate-200 backdrop:bg-opacity-50 p-2 rounded-md border-2 border-black modal"
+  class="modal fixed rounded-md border-2 border-black p-2 backdrop:bg-slate-200 backdrop:bg-opacity-50"
 >
-    <button class="px-1 hover:bg-black hover:text-white border closeBtn">
-        x
-    </button>
-    <form method="POST" action="add_source" id="addSourceForm">
-        {% csrf_token %}
-        <label>Source:</label>
-        <input type="text" name="source" id="sourceName" />
-        <input
-            type="hidden"
-            value="{{request.user.id}}"
-            name="user"
-            id="sourceUser"
-        />
-        <input
-            type="submit"
-            class="bg-green-400 text-white p-2 rounded hover:bg-green-500"
-            value="Add"
-        />
-    </form>
+  <button class="closeBtn border px-1 hover:bg-black hover:text-white">
+    x
+  </button>
+  <form method="POST" action="add_source" id="addSourceForm">
+    {% csrf_token %}
+    <label>Source:</label>
+    <input type="text" name="source" id="sourceName" />
+    <input
+      type="hidden"
+      value="{{request.user.id}}"
+      name="user"
+      id="sourceUser"
+    />
+    <input
+      type="submit"
+      class="rounded bg-green-400 p-2 text-white hover:bg-green-500"
+      value="Add"
+    />
+  </form>
 </dialog>

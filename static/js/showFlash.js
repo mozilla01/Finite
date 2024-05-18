@@ -1,9 +1,11 @@
-export default function showFlash() {
+export default function showFlash(status, message) {
+  const flash = document?.getElementById("flash");
+  flash.style.backgroundColor = status ? "green" : "red";
+  flash.innerHTML = message;
   try {
-    document.getElementById("flash").style.top = "44px";
+    flash.style.top = "44px";
     setTimeout(() => {
-      if (document?.getElementById("flash"))
-        document.getElementById("flash").style.top = "-112px";
+      if (flash) flash.style.top = "-112px";
     }, 4000);
   } catch (error) {
     console.error(error);

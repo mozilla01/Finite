@@ -10,17 +10,21 @@ document
     const csrftoken = getCookie("csrftoken");
     const category = document.getElementById("categoryName").value;
     const user = document.getElementById("categoryUser").value;
-    const response = await fetch("/create-category", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": csrftoken,
-      },
-      body: JSON.stringify({ name: category.toLowercase(), user: user }),
-    });
-    const data = await response.json();
-    document.getElementById("categorySelectExpenseForm").innerHTML = data;
-    showFlash();
+    try {
+      const response = await fetch("/create-category", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrftoken,
+        },
+        body: JSON.stringify({ name: category, user: user }),
+      });
+      const data = await response.json();
+      showFlash(1, "Category created successfully");
+      document.getElementById("categorySelectExpenseForm").innerHTML = data;
+    } catch (error) {
+      showFlash(0, error.message);
+    }
   });
 
 // Add source
@@ -31,18 +35,22 @@ document
     const csrftoken = getCookie("csrftoken");
     const source = document.getElementById("sourceName").value;
     const user = document.getElementById("sourceUser").value;
-    const response = await fetch("/add-source", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRFToken": csrftoken,
-      },
-      body: JSON.stringify({ name: source.toLowercase(), user: user }),
-    });
-    const data = await response.json();
-    console.log(data);
-    document.getElementById("sourceSelectIncomeForm").innerHTML = data;
-    showFlash();
+    try {
+      const response = await fetch("/add-source", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrftoken,
+        },
+        body: JSON.stringify({ name: source, user: user }),
+      });
+      const data = await response.json();
+      console.log(data);
+      showFlash(1, "Source added successfully");
+      document.getElementById("sourceSelectIncomeForm").innerHTML = data;
+    } catch (error) {
+      showFlash(0, error.message);
+    }
   });
 
 // Add expense

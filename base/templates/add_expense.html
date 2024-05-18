@@ -1,7 +1,7 @@
 <dialog
-  class="relative backdrop:bg-slate-200 backdrop:bg-opacity-50 p-2 rounded-md border-2 border-black modal"
+  class="modal fixed rounded-md border-2 border-black p-2 backdrop:bg-slate-200 backdrop:bg-opacity-50"
 >
-  <button class="px-1 hover:bg-black hover:text-white border closeBtn">
+  <button class="closeBtn border px-1 hover:bg-black hover:text-white">
     x
   </button>
   <form method="POST" id="addExpenseForm" class="max-w-[60vw] space-y-4">
@@ -13,9 +13,9 @@
       id="expenseUser"
     />
     <div class="flex flex-col md:flex-row">
-      <label class="font-bold uppercase mr-2 p-1">Amount</label>
+      <label class="mr-2 p-1 font-bold uppercase">Amount</label>
       <input
-        class="bg-gray-200 p-1 rounded"
+        class="rounded bg-gray-200 p-1"
         type="number"
         name="amount"
         id="expenseAmount"
@@ -30,13 +30,13 @@
       </select>
     </div>
     <div class="flex flex-col md:flex-row">
-      <label class="font-bold uppercase p-1">Date</label>
+      <label class="p-1 font-bold uppercase">Date</label>
       <input class="bg-gray-200 p-1" type="date" name="date" id="expenseDate" />
     </div>
     <div class="flex flex-col md:flex-row">
-      <label class="font-bold uppercase p-1">Description</label>
+      <label class="p-1 font-bold uppercase">Description</label>
       <input
-        class="p-1 bg-gray-200"
+        class="bg-gray-200 p-1"
         type="text"
         name="description"
         id="expenseDescription"
@@ -51,7 +51,7 @@
     <input
       type="submit"
       value="Create"
-      class="p-1 rounded bg-black text-white"
+      class="rounded bg-black p-1 text-white"
     />
   </form>
 </dialog>

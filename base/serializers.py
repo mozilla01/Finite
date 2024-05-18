@@ -1,6 +1,9 @@
 from rest_framework import serializers
 from .models import Category, Source, Transaction
 
+class ProfileDetailsSerializer(serializers.Serializer):
+    mainBal = serializers.IntegerField(required=False)
+    categories = serializers.JSONField()
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:

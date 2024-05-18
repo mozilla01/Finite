@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+  <head>
+    {% load static %}
+    <title>Home</title>
+    <link href={% static "styles.css" %} rel="stylesheet" type="text/css">
+  </head>
+<body class="font-mono">
+{% include 'navbar.html' %}
+    <div class="grid place-items-center px-4 py-8 text-[2vh]">
+        <div class="bg-white shadow-md w-full md:max-w-[70vw] rounded-lg overflow-hidden">
+            <div class="p-4">
+                <div class="flex flex-wrap justify-evenly gap-10">
+                    <div class="mr-4">
+                        <img class="rounded-full md:max-w-[100px]" src="{{request.user.pfp}}" alt="User Avatar">
+                        <input type="file" class="mt-2 block" accept="image/*">
+                    </div>
+                    <div class="w-full">
+                        <h2 class="font-semibold text-gray-800">{{request.user.username}}</h2>
+                        <p class="text-gray-700">Balance:</p>
+                        <input type="number" data-main-bal value={{request.user.balance}} class="border border-gray-300 px-3 py-2 mt-1" placeholder="Enter Balance">
+                    </div>
+                    <div>
+                        <h2 class="font-semibold text-gray-800">Categories and budgets</h2>
+                        <div class="flex flex-wrap gap-2 my-1">
+                        {% for category in categories %}
+                        <div>
+                        <p class="text-gray-700">{{category.name}}</p>
+                        <input type="number" value={{category.budget}} data-cat-id="{{category.id}}" class="border border-gray-300 px-3 py-2 mt-1" placeholder="Enter category budget">
+                        </div>
+                        {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-200 px-4 py-2 flex justify-end">
+                <button class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-md" id="save">Save</button>
+            </div>
+        </div>
+                <div class="py-10 text-center text-gray-500">
+                    <p>Set budgets, add a profile picture and take it easy...</p>
+                </div>
+    </div>
+</body>
+<script type="module" src={% static 'profile.js' %}></script>
+</html>

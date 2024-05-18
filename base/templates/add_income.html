@@ -1,10 +1,10 @@
 <dialog
-  class="relative backdrop:bg-slate-200 backdrop:bg-opacity-50 p-2 rounded-md border-2 border-black modal"
+  class="modal fixed rounded-md border-2 border-black p-2 backdrop:bg-slate-200 backdrop:bg-opacity-50"
 >
-  <button class="px-1 hover:bg-black hover:text-white border closeBtn">
+  <button class="closeBtn border px-1 hover:bg-black hover:text-white">
     x
   </button>
-  <form method="POST" id="addIncomeForm" class="max-w-[60vw]">
+  <form method="POST" id="addIncomeForm" class="my-4 max-w-[60vw]">
     {% csrf_token %}
     <label>Amount:</label>
     <input type="number" name="amount" id="incomeAmount" />
