@@ -5,15 +5,79 @@
     <title>Home</title>
     <link href={% static "styles.css" %} rel="stylesheet" type="text/css">
   </head>
-  <body>
+  <body class="text-[2vh]">
       {% include 'navbar.html' %}
-    <h1>Home</h1>
+      <main class="px-10 py-10">
+    <h1 class="text-4xl font-bold">Dashboard</h1>
     {% if user.is_authenticated %}
-    <p class="text-red-500">Welcome to the home page, {{user.username}}</p>
+    <p>Welcome to the home page, {{user.username}}</p>
     {% else %}
-    <p class="text-red-500">Welcome to the home page.</p>
+    <p>Welcome to the home page.</p>
     {% endif %}
-    <p>Transactions</p>
+    <div class="flex flex-wrap justify-center">
+        <div>{{expense_pie|safe}}</div>
+        <div>{{income_pie|safe}}</div>
+        <div>{{mixed_bar|safe}}</div>
+    </div>
+    <button class="bg-green-600 text-white p-1 rounded openBtn my-2">Create Category</button>
+    {% include 'create_category.html' %}
+    <button class="bg-green-600 text-white p-1 rounded openBtn my-2">Add Source</button>
+    {% include 'add_source.html' %}
+    <button class="bg-green-600 text-white p-1 rounded openBtn my-2">Add Expense</button>
+    {% include 'add_expense.html' %}
+    <button class="bg-green-600 text-white p-1 rounded openBtn my-2">Add Income</button>
+    {% include 'add_income.html' %}
+    <div data-tables class="flex flex-wrap justify-center gap-4 py-6">
+    <div  class="overflow-x-auto">
     <p>Expenses</p>
+    <table>
+        <thead class="border">
+            <th>Transaction ID</th>
+            <th>Transaction Date</th>
+            <th>Amount</th>
+            <th>Category</th>
+            <th>Description</th>
+        </thead>
+        <tbody id="expense-table">
+            {% for expense in expenses %}
+            <tr class="border hover:bg-gray-300 cursor-pointer">
+                <td class="border">{{expense.id}}</td>
+                <td class="border">{{expense.date}}</td>
+                <td class="border">{{expense.amount}}</td>
+                <td class="border">{{expense.category.name}}</td>
+                <td clas="border">{{expense.description}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    <div  class="overflow-x-auto">
+    <p>Income</p>
+    <table>
+        <thead class="border">
+            <th>Transaction ID</th>
+            <th>Transaction Date</th>
+            <th>Amount</th>
+            <th>Category</th>
+            <th>Description</th>
+        </thead>
+        <tbody id="income-table">
+            {% for income in incomelist %}
+            <tr class="border hover:bg-gray-300 cursor-pointer" onclick="showTransactionDetails({{income.amount}}, '{{income.source.name}}', category=null, '{{income.description}}', '{{income.date}}')">
+                <td class="border">{{income.id}}</td>
+                <td class="border">{{income.date}}</td>
+                <td class="border">{{income.amount}}</td>
+                <td class="border">{{income.source.name}}</td>
+                <td clas="border">{{income.description}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+    {% include 'transaction_details.html' %}
+      </main>
   </body>
+  <script type="module" src="{% static 'interactions.js' %}"></script>
+  <script src="{% static 'js/modal.js' %}"></script>
 </html>

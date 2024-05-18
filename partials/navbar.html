@@ -1,4 +1,5 @@
-<nav class="py-4">
+<div id="flash" class="fixed -top-28 left-2/4 -translate-x-2/4 z-100 bg-green-600 text-white p-2 rounded duration-400">Hello world!</div>
+<nav class="text-[2vh] py-4">
     {% load static %}
     <ul class="flex justify-center items-center gap-[5vw]">
         <li>
@@ -13,13 +14,13 @@
         <li>
             {% if user.is_authenticated %}
             <form method="POST" action="logout"
-                class="bg-gray-400 hover:bg-gray-600 p-2 rounded text-white hover:underline"
+                class="bg-gray-600 hover:bg-gray-800 p-2 rounded text-white"
             >
                 {% csrf_token %}
                 <input type="submit" value="Logout" />
             </form>
             {% else %}
-            <a href="{% url 'login' %}" class="bg-gray-400 hover:bg-gray-600 p-2 rounded text-white hover:underline">Login</a>
+            <a href="{% url 'login' %}" class="bg-gray-600 hover:bg-gray-800 p-2 rounded text-white">Login</a>
             {% endif %}
         </li>
     </ul>

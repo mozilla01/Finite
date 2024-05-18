@@ -1,0 +1,40 @@
+<dialog
+  class="relative backdrop:bg-slate-200 backdrop:bg-opacity-50 p-2 rounded-md border-2 border-black modal"
+  id="transaction-details"
+>
+  <button class="px-1 hover:bg-black hover:text-white border closeBtn">
+    x
+  </button>
+  <form method="POST" id="addExpenseForm" class="max-w-[60vw]">
+    {% csrf_token %}
+    <input type="hidden" value="{{request.user.id}}" name="user" id="user" />
+    <label>Amount:</label>
+    <input type="number" name="amount" id="expenseAmount" />
+    {% if category %}
+    <label>Category:</label>
+    <select id="categorySelectExpenseForm">
+      {% for category in categories %}
+      <option>{{category.name}}</option>
+      {% endfor %}
+    </select>
+    {% else %}
+    <label>Source:</label>
+    <select id="sourceSelectIncomeForm">
+      {% for source in sources %}
+      <option>{{source.name}}</option>
+      {% endfor %}
+    </select>
+    {% endif %}
+    <label>Date:</label>
+    <input type="date" name="date" id="expenseDate" />
+    <label>Description:</label>
+    <input type="text" name="description" id="expenseDescription" />
+    <input
+      type="hidden"
+      value="{{request.user.id}}"
+      name="user"
+      id="sourceUser"
+    />
+    <input type="submit" class="bg-black text-white" />
+  </form>
+</dialog>

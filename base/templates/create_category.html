@@ -1,0 +1,28 @@
+<dialog
+    class="relative backdrop:bg-slate-200 backdrop:bg-opacity-50 p-2 rounded-md border-2 border-black modal"
+>
+    <button class="closeBtn px-1 hover:bg-black hover:text-white border">
+        x
+    </button>
+    <form
+        method="POST"
+        action="create_category"
+        id="createCategoryForm"
+        class="p-6"
+    >
+        {% csrf_token %}
+        <label>Category:</label>
+        <input type="text" name="category" id="categoryName" />
+        <input
+            type="hidden"
+            value="{{request.user.id}}"
+            name="user"
+            id="categoryUser"
+        />
+        <input
+            type="submit"
+            class="bg-green-400 text-white p-2 rounded"
+            value="Create"
+        />
+    </form>
+</dialog>
