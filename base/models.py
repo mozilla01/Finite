@@ -9,13 +9,19 @@ class User(AbstractUser):
 
 class Category(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=50)
     budget = models.IntegerField(null=True, blank=True)
+
+    class Meta:
+        unique_together = 'user', 'name'
 
 
 class Source(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=50)
+
+    class Meta:
+        unique_together = 'user', 'name'
 
 
 class Transaction(models.Model):
@@ -33,5 +39,13 @@ class Transaction(models.Model):
     description = models.CharField(max_length=500)
 
     def save(self, *args, **kwargs):
-        self.init_balance = User.objects.get(id=self.user.id).balance
+        self.init_balance = User.objects.get(id=self.user.id).balance - self.amount if self.type == 'E' else User.objects.get(id=self.user.id).balance + self.amount
         super(Transaction, self).save(*args, **kwargs)
+
+
+class Bill(models.Model):
+    host = models.ForeignKey(User, on_delete=models.CASCADE)
+    bill_name = models.CharField(max_length=50)
+    paid = models.BooleanField(default=False)
+    amount = models.IntegerField()
+    people = models.ManyToManyField(User, related_name='people')

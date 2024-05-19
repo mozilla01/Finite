@@ -1,18 +1,20 @@
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-from rest_framework import permissions
 from rest_framework.response import Response
 from django.views import View
 from rest_framework.views import APIView
-from .models import Category, Source, Transaction
+from .models import Category, Source, Transaction, Bill
 from rest_framework.permissions import IsAuthenticated
 from .serializers import CategorySerializer, SourceSerializer, TransactionSerializer, ProfileDetailsSerializer
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from datetime import datetime
+from django.db.models import Sum
+from .utils import send_alert_mail
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 
 User = get_user_model()
 
@@ -21,14 +23,16 @@ def index(request):
     today = datetime.today()
     categories = Category.objects.filter(user=request.user)
     sources = Source.objects.filter(user=request.user)
-    expenses = Transaction.objects.filter(user=request.user, type='E').order_by('date')
-    incomelist = Transaction.objects.filter(user=request.user, type='I').order_by('date')
+    transactions = Transaction.objects.filter(user=request.user, date__month=today.month).order_by('date')
+    expenses = transactions.filter(type='E', date__month=today.month).order_by('date')
+    incomelist = transactions.filter(type='I', date__month=today.month).order_by('date')
+    print("income", incomelist)
     
     # Pie chart for expenses
     if expenses.count() == 0:
         expenses_pie_html = '<p class="p-4">No expenses this month</p>'
     else:
-        df = pd.DataFrame(list(expenses.filter(date__month=today.month).values("category__name", "amount")))
+        df = pd.DataFrame(list(expenses.values("category__name", "amount")))
         fig = px.pie(df, values='amount', names='category__name', title='Expenses by Category this month')
         expenses_pie_html = fig.to_html(full_html=False)
 
@@ -36,7 +40,9 @@ def index(request):
     if incomelist.count() == 0:
         income_pie_html = '<p class="p-4">No income this month</p>'
     else:
-        df = pd.DataFrame(list(incomelist.filter(date__month=today.month).values("source__name", "amount")))
+        df = pd.DataFrame(list(incomelist.values("source__name", "amount")))
+        print("income pie chart")
+        print(df.head())
         fig = px.pie(df, values='amount', names='source__name', title='Income by Source this month')
         income_pie_html = fig.to_html(full_html=False)
 
@@ -49,27 +55,39 @@ def index(request):
         mixed_bar_html = fig.to_html(full_html=False)
 
     # line chart for savings this month
-    balance = request.user.balance
-    df = pd.DataFrame({
-        'balance': [balance],
-        'date': 'today'
-    })
-    transactions = Transaction.objects.filter(user=request.user, date__month=today.month).order_by('date')
-    for entry in transactions:
-        if entry.type == 'E':
-            balance -= entry.amount
-        else:
-            balance += entry.amount
-        df.loc[len(df)] = {'balance': balance, 'date': entry.date}
-        df = df.reset_index(drop=True)
-    print('Line chart data')
-    print(df.head())
-    fig = px.line(df, x='date', y='balance', title='Balance this month')
-    savings_html = fig.to_html(full_html=False)
 
-    # Category budgets
+    if transactions.count() > 0:
+        df = pd.DataFrame(list(transactions.values("date", "init_balance")))
+        fig = px.line(df, x='date', y='init_balance', title='Balance this month')
+        savings_html = fig.to_html(full_html=False)
+    else:
+        savings_html = '<p class="p-4">No transactions yet</p>'
+
+    # Category budgets 
+    category_balances = []
+    category_expenses = []
+    category_names = []
+    budget_overrun = []
     for category in categories:
-        category.budget = category.budget if category.budget else 0
+         if category.budget:
+            sum = expenses.filter(category=category).aggregate(Sum('amount'))['amount__sum'] or 0
+            category_expenses.append(sum)
+            if sum > category.budget:
+                budget_overrun.append(category.name)
+            category_balances.append(category.budget - sum)
+            category_names.append(category.name)
+    
+    fig = go.Figure()
+    fig.add_trace(go.Bar(y=[category for category in category_names], x=category_expenses, orientation='h', marker=dict(
+        color='rgba(246, 78, 139, 1.0)',
+        line=dict(color='rgba(58, 71, 80, 1.0)', width=3)
+    ), name='Expenses'))
+    fig.add_trace(go.Bar(y=[category for category in category_names], x=category_balances, orientation='h', marker=dict(
+        color='rgba(58, 71, 80, 0.2)',
+        line=dict(color='rgba(58, 71, 80, 1.0)', width=3)
+    ), name='Remaining Budget'))
+    fig.update_layout(barmode='stack', title='Category Budgets this month')
+    category_budgets_html = fig.to_html(full_html=False)
 
     context = {
         'categories': categories,
@@ -80,8 +98,48 @@ def index(request):
         'income_pie': income_pie_html,
         'mixed_bar': mixed_bar_html,
         'savings': savings_html,
+        'category_budgets': category_budgets_html,
+        'budget_overrun': budget_overrun,
     }
     return render(request, 'index.html', context=context)
+
+
+class Bills(View):
+    def get(self, request):
+        created_bills = Bill.objects.filter(host=request.user, paid=False)
+        pending_bills = Bill.objects.filter(people=request.user, paid=False)
+        for bill in pending_bills:
+            if request.user in bill.people.all():
+                bill.to_pay = bill.amount / bill.people.count()
+        
+        for bill in created_bills:
+            bill.to_pay = bill.amount / bill.people.count()
+
+        context = {
+            'created_bills': created_bills,
+            'pending_bills': pending_bills,
+        }
+        return render(request, 'bills.html', context=context)
+    
+    def post(self, request):
+        data = request.POST
+        bill = Bill.objects.create(host=request.user, bill_name=data['bill_name'], amount=data['amount'])
+        for person in data['people'].strip().split(','):
+            if person:
+                bill.people.add(User.objects.get(username=person))
+        bill.save()
+        return redirect('bills')
+
+
+class PayBill(View):
+    def post(self, request, pk):
+        bill = Bill.objects.get(id=pk)
+        amount = bill.amount / bill.people.count()
+        bill.people.remove(request.user)
+        bill.save()
+        Transaction.objects.create(user=request.user, type='E', amount=amount, description=f'Paid for {bill.bill_name}', category=Category.objects.get(name='bills', user=request.user), source=None).save()
+        return redirect('bills')
+
 
 
 class Profile(View):
@@ -107,6 +165,8 @@ def signup(request):
         try:
             user = User.objects.create_user(username=username, password=password, email=email)
             user.save()
+
+            Category.objects.create(user=user, name='bills').save()
             return redirect('index')
         except:
             return render(request, 'signup.html', {'error': 'Username already exists'})
@@ -173,9 +233,12 @@ class AddTransaction(APIView):
             serializer.save()
             group = Category.objects.get(id=serializer.data['category']) if serializer.data['category'] else Source.objects.get(id=serializer.data['source'])
 
+            send = False
             user = User.objects.get(id=request.user.id)
             if serializer.data['type'] == 'E':
                 user.balance -= serializer.data['amount']
+                if user.balance < 0:
+                    send = True
             else:
                 user.balance += serializer.data['amount']
             user.save()
@@ -189,6 +252,9 @@ class AddTransaction(APIView):
                 <td>{serializer.data['description']}</td>
             </tr>
             '''
+            if send:
+                # send_mail(subject='Balance alert', from_email=settings.DEFAULT_FROM_EMAIL, message='Your balance is negative', recipient_list=[user.email], fail_silently=False)
+                send_alert_mail('Balance alert', 'Your balance is negative. This email is simply an alert.', user.email)
             return Response(data=html, status=201)
         else:
             return Response(serializer.errors, status=400)
@@ -220,7 +286,11 @@ class DeleteTransaction(View):
 
     def post(self, request):
         id = request.POST['id']
-        Transaction.objects.get(id=id).delete()
+        transaction = Transaction.objects.get(id=id)
+        user = User.objects.get(id=request.user.id)
+        user.balance += 0 - transaction.amount if transaction.type == 'I' else transaction.amount
+        user.save()
+        transaction.delete()
         return redirect('index')
 
 

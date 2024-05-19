@@ -3,7 +3,7 @@ export default function showFlash(status, message) {
   flash.style.backgroundColor = status ? "green" : "red";
   flash.innerHTML = message;
   try {
-    flash.style.top = "44px";
+    flash.style.top = "70px";
     setTimeout(() => {
       if (flash) flash.style.top = "-112px";
     }, 4000);

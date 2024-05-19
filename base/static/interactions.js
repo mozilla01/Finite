@@ -19,11 +19,15 @@ document
         },
         body: JSON.stringify({ name: category, user: user }),
       });
+      if (response.ok) {
+        showFlash(1, "Category created successfully");
+      } else {
+        showFlash(0, "Category already exists");
+      }
       const data = await response.json();
-      showFlash(1, "Category created successfully");
       document.getElementById("categorySelectExpenseForm").innerHTML = data;
     } catch (error) {
-      showFlash(0, error.message);
+      console.error(error);
     }
   });
 
@@ -44,12 +48,16 @@ document
         },
         body: JSON.stringify({ name: source, user: user }),
       });
+      if (response.ok) {
+        showFlash(1, "Source added successfully");
+      } else {
+        showFlash(0, "Source already exists");
+      }
       const data = await response.json();
       console.log(data);
-      showFlash(1, "Source added successfully");
       document.getElementById("sourceSelectIncomeForm").innerHTML = data;
     } catch (error) {
-      showFlash(0, error.message);
+      console.error(error);
     }
   });
 
@@ -80,6 +88,11 @@ document
           user: user,
         }),
       });
+      if (response.ok) {
+        showFlash(1, "Expense added successfully");
+      } else {
+        showFlash(0, "Error adding expense, please try again.");
+      }
       const data = await response.json();
       console.log(data);
       document.getElementById("expense-table").innerHTML += data;
@@ -115,6 +128,11 @@ document
           user: user,
         }),
       });
+      if (response.ok) {
+        showFlash(1, "Income added successfully");
+      } else {
+        showFlash(0, "Error adding income, please try again.");
+      }
       const data = await response.json();
       console.log(data);
       document.getElementById("income-table").innerHTML += data;

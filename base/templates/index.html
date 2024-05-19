@@ -10,14 +10,16 @@
       <main class="px-10 py-10">
     <h1 class="text-[5vh] font-bold">Dashboard</h1>
     <p class="my-2">{{user.username}}'s expenses, income and savings</p>
-    <div class="flex flex-wrap justify-center">
-        <div>{{expense_pie|safe}}</div>
-        <div>{{income_pie|safe}}</div>
-        <div>{{mixed_bar|safe}}</div>
-        <div>{{savings|safe}}</div>
+
+    <div class="py-10">
+    <p class="text-4xl">Overview</p>
+    {% if user.balance < 0 %}
+    <p class="text-red-400 font-bold">You balance is running in negative.</p>
+    {% endif %}
+    {% for category in budget_overrun %}
+    <p class="text-red-400 font-bold">You have overrun you {{category}} budget.</p>
+    {% endfor %}
     </div>
-    <section id="category-budgets">
-    </section>
     <div class="flex flex-wrap w-full justify-evenly mb-4">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-[2vw]">
     <button class="bg-green-600 text-white p-1 rounded openBtn my-2">Create Category</button>
@@ -30,7 +32,7 @@
     {% include 'add_expense.html' %}
     {% include 'add_income.html' %}
     </div>
-    <div data-tables class="flex flex-wrap justify-center gap-4 border-t border-black py-6">
+    <div data-tables class="flex flex-wrap justify-center gap-28 py-6">
     <div  class="overflow-x-auto">
     <p class="text-4xl">Expenses</p>
     <table>
@@ -53,8 +55,8 @@
             {% endfor %}
         </tbody>
     </table>
-    </div>
-    <div  class="overflow-x-auto">
+</div>
+<div class="overflow-x-auto">
     <p class="text-4xl">Income</p>
     <table>
         <thead class="border">
@@ -76,6 +78,15 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
+    </div>
+    <div  class="overflow-x-auto">
+    <div class="flex flex-wrap justify-center">
+        <div>{{expense_pie|safe}}</div>
+        <div>{{income_pie|safe}}</div>
+        <div>{{mixed_bar|safe}}</div>
+        <div>{{savings|safe}}</div>
+        <div>{{category_budgets|safe}}</div>
     </div>
 </div>
     {% include 'transaction_details.html' %}
