@@ -7,7 +7,9 @@
 <body class="font-mono">
 {% include 'navbar.html' %}
     <main>
-        <div class="grid place-items-center">
+        <div class="grid place-items-center my-20">
+            <div class="w-full max-w-[80vw]">
+            <p class="text-[4vh] font-bold">Split bills, track who owes you!</p>
         <form method="POST" class="my-20 flex flex-wrap justify-evenly gap-5 text-[2vh]" action="bills" class="p-6">
             {% csrf_token %}
             <div>
@@ -15,19 +17,20 @@
             <input class="p-1 rounded bg-gray-100" placeholder="Enter name for bill" type="text" name="bill_name" id="billName" />
             </div>
             <div>
-            <label>Amount:</label>
+            <label>Total Owed Amount:</label>
             <input class="p-1 rounded bg-gray-100" placeholder="Enter amount" type="number" name="amount" id="billAmount" />
             </div>
             <div>
-            <label>People:</label>
+            <label>Debted People:</label>
             <input class="p-1 rounded bg-gray-100" placeholder="suresh,ramesh,mahesh,..." type="input" name="people" id="billPeople" />
             </div>
             <input type="submit" class="rounded bg-green-400 p-2 text-white" value="Create" />
             </form>
+            </div>
 
-            <div id="tables" class="mx-10 md:px-0 flex flex-wrap gap-10 justify-evenly">
-            <div id="created-bills">
-            <p class="text-[4vh] py-2">Bills</p>
+            <div id="tables" class="mx-10 md:px-0 max-w-[80vw] flex flex-wrap gap-10 justify-evenly">
+            <div class="w-full overflow-auto" id="created-bills">
+            <p class="text-[4vh] py-2 font-bold">Your Created Bills</p>
                 <table class="w-full text-[2vh] text-left rtl:text-right text-gray-500">
                     <thead class="text-[2vh] text-gray-700 uppercase bg-gray-50">
                         <tr>
@@ -47,7 +50,13 @@
                                People 
                             </th>
                             <th scope="col" class="px-6 py-3">
-                                To pay
+                               Cleared bills
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Split
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                                Action/Delete
                             </th>
                         </tr>
                     </thead>
@@ -70,6 +79,9 @@
                                 {% for person in bill.people.all %} {{person.username}} {% endfor %}
                             </td>
                             <td class="px-6 py-4">
+                                {% for person in bill.paid.all %} {{person.username}} {% endfor %}
+                            </td>
+                            <td class="px-6 py-4">
                                {{bill.to_pay}} 
                                {% if user in bill.people.all %}
                                <form method="POST" action="{% url 'pay-bill' bill.id %}">
@@ -78,13 +90,19 @@
                                </form>
                                {% endif %}
                             </td>
+                            <td class="px-6 py-4">
+                               <form method="POST" action="{% url 'delete-bill' bill.id %}">
+                               {% csrf_token %}
+                               <input type="submit" value="Delete" class="rounded bg-green-400 p-1 text-white" />
+                               </form>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-            <div id="pending-bills">
-                <p class="py-2 text-[4vh]">Pending Bills</p>
+            <div class="overflow-auto w-full" id="pending-bills">
+                <p class="py-2 text-[4vh] font-bold">Your Pending Bills</p>
                 <table class="w-full text-[2vh] text-left rtl:text-right text-gray-500">
                     <thead class="text-[2vh] text-gray-700 uppercase bg-gray-50">
                         <tr>
@@ -102,6 +120,9 @@
                             </th>
                             <th scope="col" class="px-6 py-3">
                                People 
+                            </th>
+                            <th scope="col" class="px-6 py-3">
+                               Cleared bills
                             </th>
                             <th scope="col" class="px-6 py-3">
                                 To pay
@@ -125,6 +146,9 @@
                             </td>
                             <td class="px-6 py-4">
                                 {% for person in bill.people.all %} {{person.username}} {% endfor %}
+                            </td>
+                            <td class="px-6 py-4">
+                                {% for person in bill.paid.all %} {{person.username}} {% endfor %}
                             </td>
                             <td class="px-6 py-4">
                                {{bill.to_pay}} 

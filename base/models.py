@@ -24,12 +24,22 @@ class Source(models.Model):
         unique_together = 'user', 'name'
 
 
+
+class Bill(models.Model):
+    host = models.ForeignKey(User, on_delete=models.CASCADE)
+    bill_name = models.CharField(max_length=50)
+    amount = models.IntegerField()
+    people = models.ManyToManyField(User, related_name='people')
+    paid = models.ManyToManyField(User, related_name='paid', blank=True)
+
+
 class Transaction(models.Model):
     class Type(models.TextChoices):
         EXPENSE = 'E', _('Expense')
         INCOME = 'I', _('Income')
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    bill = models.ForeignKey(Bill, blank=True, null=True, on_delete=models.SET_NULL)
     type = models.CharField(max_length=10, choices=Type.choices)
     category = models.ForeignKey(Category, null=True, on_delete=models.SET_NULL)
     source = models.ForeignKey(Source, null=True, on_delete=models.SET_NULL)
@@ -41,11 +51,3 @@ class Transaction(models.Model):
     def save(self, *args, **kwargs):
         self.init_balance = User.objects.get(id=self.user.id).balance - self.amount if self.type == 'E' else User.objects.get(id=self.user.id).balance + self.amount
         super(Transaction, self).save(*args, **kwargs)
-
-
-class Bill(models.Model):
-    host = models.ForeignKey(User, on_delete=models.CASCADE)
-    bill_name = models.CharField(max_length=50)
-    paid = models.BooleanField(default=False)
-    amount = models.IntegerField()
-    people = models.ManyToManyField(User, related_name='people')

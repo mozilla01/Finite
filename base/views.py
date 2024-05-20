@@ -11,7 +11,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from datetime import datetime
 from django.db.models import Sum
-from .utils import send_alert_mail
+from .utils import send_alert_mail, delete_transaction
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -106,14 +106,14 @@ def index(request):
 
 class Bills(View):
     def get(self, request):
-        created_bills = Bill.objects.filter(host=request.user, paid=False)
-        pending_bills = Bill.objects.filter(people=request.user, paid=False)
+        created_bills = Bill.objects.filter(host=request.user)
+        pending_bills = Bill.objects.filter(people=request.user)
         for bill in pending_bills:
             if request.user in bill.people.all():
-                bill.to_pay = bill.amount / bill.people.count()
+                bill.to_pay = int(bill.amount / (bill.people.count() + bill.paid.count()))
         
         for bill in created_bills:
-            bill.to_pay = bill.amount / bill.people.count()
+            bill.to_pay = int(bill.amount / (bill.people.count() + bill.paid.count()))
 
         context = {
             'created_bills': created_bills,
@@ -124,9 +124,14 @@ class Bills(View):
     def post(self, request):
         data = request.POST
         bill = Bill.objects.create(host=request.user, bill_name=data['bill_name'], amount=data['amount'])
-        for person in data['people'].strip().split(','):
+        people_list = data['people'].strip().split(',')
+        email_list = []
+        owed = int(bill.amount) / (len(people_list))
+        for person in people_list:
             if person:
                 bill.people.add(User.objects.get(username=person))
+                email_list.append(User.objects.get(username=person).email)
+        send_alert_mail(subject='Bill added', content=f'You have been added to bill {bill.bill_name}. You owe {int(owed)} to {request.user.username}.', recipients=email_list)
         bill.save()
         return redirect('bills')
 
@@ -134,10 +139,32 @@ class Bills(View):
 class PayBill(View):
     def post(self, request, pk):
         bill = Bill.objects.get(id=pk)
-        amount = bill.amount / bill.people.count()
+        user = User.objects.get(id=request.user.id)
+        host = User.objects.get(id=bill.host.id)
+        amount = int(bill.amount / (bill.people.count()+bill.paid.count()))
         bill.people.remove(request.user)
+        bill.paid.add(request.user)
         bill.save()
-        Transaction.objects.create(user=request.user, type='E', amount=amount, description=f'Paid for {bill.bill_name}', category=Category.objects.get(name='bills', user=request.user), source=None).save()
+        Transaction.objects.create(user=request.user, type='E', amount=amount, bill=bill, description=f'Paid for {bill.bill_name}', category=Category.objects.get(name='bills', user=request.user), source=None).save()
+        Transaction.objects.create(user=bill.host, type='I', amount=amount, bill=bill, description=f'{request.user.username}\'s split for {bill.bill_name}', category=None, source=Source.objects.get(name='split', user=request.user)).save()
+        send_alert_mail(subject='Split paid', content=f'{request.user.username} has paid {amount} for bill {bill.bill_name}', recipients=[bill.host.email])
+        user.balance -= amount
+        host.balance += amount
+        user.save()
+        host.save()
+        return redirect('bills')
+
+
+class DeleteBill(View):
+    def post(self, request, pk):
+        bill = Bill.objects.get(id=pk)
+        email_list = []
+        for person in bill.paid.all():
+            delete_transaction(Transaction.objects.get(user=person, bill=bill).id)
+            delete_transaction(Transaction.objects.get(user=bill.host, bill=bill).id)
+            email_list.append(person.email)
+        send_alert_mail(subject='Bill deleted', content=f'{request.user.username} has deleted Bill {bill.bill_name}. Amount has been refunded to your wallet.', recipients=email_list)
+        bill.delete()
         return redirect('bills')
 
 
@@ -167,6 +194,7 @@ def signup(request):
             user.save()
 
             Category.objects.create(user=user, name='bills').save()
+            Source.objects.create(user=user, name='split').save()
             return redirect('index')
         except:
             return render(request, 'signup.html', {'error': 'Username already exists'})
@@ -253,8 +281,7 @@ class AddTransaction(APIView):
             </tr>
             '''
             if send:
-                # send_mail(subject='Balance alert', from_email=settings.DEFAULT_FROM_EMAIL, message='Your balance is negative', recipient_list=[user.email], fail_silently=False)
-                send_alert_mail('Balance alert', 'Your balance is negative. This email is simply an alert.', user.email)
+                send_alert_mail('Balance alert', 'Your balance is negative. This email is simply an alert.', [user.email])
             return Response(data=html, status=201)
         else:
             return Response(serializer.errors, status=400)
@@ -286,11 +313,7 @@ class DeleteTransaction(View):
 
     def post(self, request):
         id = request.POST['id']
-        transaction = Transaction.objects.get(id=id)
-        user = User.objects.get(id=request.user.id)
-        user.balance += 0 - transaction.amount if transaction.type == 'I' else transaction.amount
-        user.save()
-        transaction.delete()
+        delete_transaction(id)
         return redirect('index')
 
 
