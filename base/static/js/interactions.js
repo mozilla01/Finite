@@ -1,11 +1,38 @@
 "use strict";
-import getCookie from "../../static/js/csrf.js";
-import showFlash from "../../static/js/showFlash.js";
+
+function showFlash(status, message) {
+  const flash = document?.getElementById("flash");
+  flash.style.backgroundColor = status ? "green" : "red";
+  flash.innerHTML = message;
+  try {
+    flash.style.top = "70px";
+    setTimeout(() => {
+      if (flash) flash.style.top = "-112px";
+    }, 4000);
+  } catch (error) {
+    console.error(error);
+  }
+}
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === name + "=") {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
 
 // Create category
 document
   .getElementById("createCategoryForm")
   .addEventListener("submit", async (e) => {
+    console.log("create category");
     e.preventDefault();
     const csrftoken = getCookie("csrftoken");
     const category = document.getElementById("categoryName").value;
@@ -72,21 +99,26 @@ document
     const date = document.getElementById("expenseDate").value;
     const description = document.getElementById("expenseDescription").value;
     const user = document.getElementById("expenseUser").value;
+    const receipt = document.getElementById("expenseReceipt").files[0];
+
+    let formData = new FormData();
+    formData.append("amount", amount);
+    formData.append("category", category);
+    formData.append("date", date);
+    formData.append("description", description);
+    formData.append("type", "E");
+    formData.append("user", user);
+    if (receipt) {
+      formData.append("receipt", receipt);
+    }
+
     try {
       const response = await fetch("/add-transaction", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           "X-CSRFToken": csrftoken,
         },
-        body: JSON.stringify({
-          amount: amount,
-          category: category,
-          description: description,
-          date: date,
-          type: "E",
-          user: user,
-        }),
+        body: formData,
       });
       if (response.ok) {
         showFlash(1, "Expense added successfully");
@@ -112,21 +144,22 @@ document
     const date = document.getElementById("incomeDate").value;
     const description = document.getElementById("incomeDescription").value;
     const user = document.getElementById("incomeUser").value;
+
+    let formData = new FormData();
+    formData.append("amount", amount);
+    formData.append("source", source);
+    formData.append("date", date);
+    formData.append("description", description);
+    formData.append("type", "I");
+    formData.append("user", user);
+
     try {
       const response = await fetch("/add-transaction", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           "X-CSRFToken": csrftoken,
         },
-        body: JSON.stringify({
-          amount: amount,
-          source: source,
-          description: description,
-          date: date,
-          type: "I",
-          user: user,
-        }),
+        body: formData,
       });
       if (response.ok) {
         showFlash(1, "Income added successfully");

@@ -8,21 +8,21 @@
   <form method="POST" action="delete-transaction" class="absolute right-2 top-2 flex gap-4">
     {% csrf_token %}
     <button
-      class="confirm-btn hidden border px-1 hover:bg-red-600 hover:text-white md:right-20"
+      class="confirm-btn hidden border px-1 text-white bg-red-500 hover:bg-red-600 md:right-20"
     >
 
     <input type="hidden" name="id" class="del-id" id="transac-id" />
-      <input type="submit" valu="Confirm?" />
+      <input type="submit" value="Confirm?" />
   </form>
-    <button class="del-btn border px-1 hover:bg-red-600 hover:text-white">
-      DEL
+    <button class="del-btn border px-1 bg-red-500 text-white hover:bg-red-600">
+      DELETE
     </button>
-  </div>
   <form
     method="POST"
     action="update-transaction"
+    enctype="multipart/form-data"
     id="addExpenseForm"
-    class="max-w-[60vw] space-y-4"
+    class="max-w-[60vw] space-y-4 p-6"
   >
     {% csrf_token %}
     <input
@@ -33,7 +33,7 @@
     />
     <input type="hidden" class="del-id" id="transac-id" name="id" />
     <div class="flex flex-col md:flex-row">
-      <label class="mr-2 p-1 font-bold uppercase">Amount</label>
+      <label class="mr-2 p-1 font-bold uppercase">Amount: </label>
       <input
         class="rounded bg-gray-200 p-1"
         type="number"
@@ -42,7 +42,7 @@
       />
     </div>
     <div class="flex flex-col md:flex-row">
-      <label class="font-bold uppercase">Category</label>
+      <label class="font-bold uppercase">Category: </label>
       <select id="transacCategory" name="category" class="min-w-[100px]">
         {% for category in categories %}
         <option value="{{category.id}}">{{category.name}}</option>
@@ -55,11 +55,11 @@
       </select>
     </div>
     <div class="flex flex-col md:flex-row">
-      <label class="p-1 font-bold uppercase">Date</label>
+      <label class="p-1 font-bold uppercase">Date: </label>
       <input class="bg-gray-200 p-1" type="date" name="date" id="transacDate" />
     </div>
     <div class="flex flex-col md:flex-row">
-      <label class="p-1 font-bold uppercase">Description</label>
+      <label class="p-1 font-bold uppercase">Description: </label>
       <input
         class="bg-gray-200 p-1"
         type="text"
@@ -67,9 +67,18 @@
         id="transacDescription"
       />
     </div>
+    <div class="flex flex-col md:flex-row">
+      <label class="p-1 font-bold uppercase">Receipt: </label>
+      <a id="expenseReceiptLink" href="" class="underline text-blue-500">View Receipt</a>
+      <input
+        class="bg-gray-200 p-1"
+        type="file"
+        name="receipt"
+      />
+    </div>
     <input
       type="submit"
-      value="Create"
+      value="Update"
       class="rounded bg-black p-1 text-white"
     />
   </form>

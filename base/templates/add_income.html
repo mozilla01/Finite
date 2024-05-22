@@ -4,20 +4,43 @@
   <button class="closeBtn border px-1 hover:bg-black hover:text-white">
     x
   </button>
-  <form method="POST" id="addIncomeForm" class="my-4 max-w-[60vw]">
+  <form method="POST" id="addIncomeForm" class="max-w-[60vw] space-y-4 p-6">
     {% csrf_token %}
-    <label>Amount:</label>
-    <input type="number" name="amount" id="incomeAmount" />
-    <label>Source:</label>
-    <select id="sourceSelectIncomeForm">
-      {% for source in sources %}
-      <option value="{{source.id}}">{{source.name}}</option>
-      {% endfor %}
-    </select>
-    <label>Date:</label>
-    <input type="date" name="date" id="incomeDate" />
-    <label>Description:</label>
-    <input type="text" name="description" id="incomeDescription" />
+    <div class="flex flex-col md:flex-row">
+      <label>Amount:</label>
+      <input
+        type="number"
+        class="rounded bg-gray-200 p-1"
+        name="amount"
+        id="incomeAmount"
+      />
+    </div>
+    <div class="flex flex-col md:flex-row">
+      <label>Source:</label>
+      <select id="sourceSelectIncomeForm" class="rounded bg-gray-200 p-1">
+        {% for source in sources %}
+        <option value="{{source.id}}">{{source.name}}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="flex flex-col md:flex-row">
+      <label>Date:</label>
+      <input
+        type="date"
+        name="date"
+        class="rounded bg-gray-200 p-1"
+        id="incomeDate"
+      />
+    </div>
+    <div class="flex flex-col md:flex-row">
+      <label>Description:</label>
+      <input
+        class="rounded bg-gray-200 p-1"
+        type="text"
+        name="description"
+        id="incomeDescription"
+      />
+    </div>
     <input
       type="hidden"
       value="{{request.user.id}}"

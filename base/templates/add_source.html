@@ -4,7 +4,7 @@
   <button class="closeBtn border px-1 hover:bg-black hover:text-white">
     x
   </button>
-  <form method="POST" action="add_source" id="addSourceForm">
+  <form method="POST" action="add_source" id="addSourceForm" class="p-6">
     {% csrf_token %}
     <label>Source:</label>
     <input type="text" name="source" id="sourceName" />

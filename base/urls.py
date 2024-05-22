@@ -1,4 +1,6 @@
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
 from . import views
 
 urlpatterns = [
@@ -16,4 +18,4 @@ urlpatterns = [
     path('update-transaction', views.UpdateTransaction.as_view(), name='update-transaction'),
     path('delete-transaction', views.DeleteTransaction.as_view(), name='delete-transaction'),
     path('update-profile', views.UpdateProfile.as_view(), name='update-profile'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
