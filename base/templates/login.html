@@ -18,9 +18,10 @@
             <label>Password:</label>
             <input type="password" class="bg-gray-100 rounded p-2" placeholder="password" name="password"/>
           </div>
-            <input type="Submit" class="bg-gray-700 hover:bg-black text-white p-2 rounded-md"/>
+          <p class="text-[2vh] text-gray-600">Don't have an account? <a class="underline" href="signup">Sign up</a></p>
+            <input type="Submit" class="bg-gray-700 hover:bg-black text-white p-2 rounded-md" value="Sign In"/>
     {% load socialaccount %}
-      <a href="{% provider_login_url 'google' %}" class="border border-black p-2 rounded-md hover:bg-black hover:text-white">Login with Google</a>
+      <a href="{% provider_login_url 'google' %}" class="border border-black p-2 rounded-md hover:bg-black hover:text-white">Continue with Google</a>
       <div class="text-center my-4 text-red-600">
       {% for message in messages %}
       {{message}}
