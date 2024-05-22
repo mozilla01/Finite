@@ -11,18 +11,18 @@
         <div class="bg-white shadow-md w-full md:max-w-[70vw] rounded-lg overflow-hidden">
             <div class="p-4">
                 <div class="flex flex-wrap justify-evenly gap-10">
-                    <div class="mr-4">
+                    <div class="grid place-items-center mr-4">
                         <img class="rounded-full md:max-w-[100px]" src="{{request.user.pfp}}" alt="User Avatar">
                         <input type="file" class="mt-2 block" accept="image/*">
                     </div>
-                    <div class="w-full">
+                    <div class="w-full grid place-items-center">
                         <h2 class="font-semibold text-gray-800">{{request.user.username}}</h2>
                         <p class="text-gray-700">Balance:</p>
-                        <input type="number" data-main-bal value={{request.user.balance}} class="border border-gray-300 px-3 py-2 mt-1" placeholder="Enter Balance">
+                        <input type="number" data-main-bal value={{request.user.balance}} disabled class="border border-gray-300 px-3 py-2 mt-1">
                     </div>
-                    <div>
+                    <div class="grid place-items-center">
                         <h2 class="font-semibold text-gray-800">Categories and budgets</h2>
-                        <div class="flex flex-wrap gap-2 my-1">
+                        <div class="flex flex-wrap justify-center gap-2 my-1 py-4">
                         {% for category in categories %}
                         <div>
                         <p class="text-gray-700">{{category.name}}</p>
@@ -42,5 +42,5 @@
                 </div>
     </div>
 </body>
-<script type="module" src={% static 'profile.js' %}></script>
+<script src={% static 'js/profile.js' %}></script>
 </html>

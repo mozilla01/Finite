@@ -5,17 +5,32 @@
     <title>Home</title>
     <link href={% static "styles.css" %} rel="stylesheet" type="text/css">
   </head>
-  <body>
-      <p>Sign up</p>
-      <form method="POST" action="signup">
+  <body class="h-screen font-mono w-screen text-[2vh] grid items-center">
+    <div>
+      <form class="grid place-items-center space-y-10" method="POST" action="signup">
           {% csrf_token %}
-          <label>username:</label>
-            <input type="text" name="username"/>
-          <label>email:</label>
-            <input type="email" name="email"/>
-            <label>password:</label>
-            <input type="password" name="password"/>
-            <input type="submit" class="bg-black text-white"/>
+      <p>Sign Up to Finite</p>
+          <div>
+          <label>Username:</label>
+            <input class="bg-gray-100 p-2 rounded" placeholder="suresh123" type="text" name="username"/>
+          </div>
+          <div>
+          <label>Email:</label>
+            <input class="bg-gray-100 p-2 rounded" placeholder="name@domain.com" type="email" name="email"/>
+          </div>
+          <div>
+            <label>Password:</label>
+            <input type="password" class="bg-gray-100 rounded p-2" placeholder="password" name="password"/>
+          </div>
+            <input type="Submit" class="bg-gray-700 hover:bg-black text-white p-2 rounded-md"/>
+    {% load socialaccount %}
+      <a href="{% provider_login_url 'google' %}" class="border border-black p-2 rounded-md hover:bg-black hover:text-white">Sign In with Google</a>
+      <div class="text-center my-4 text-red-600">
+      {% for message in messages %}
+      {{message}}
+      {% endfor %}
+      </div>
       </form>
+    </div>
   </body>
 </html>

@@ -1,0 +1,32 @@
+<dialog
+  class="modal fixed rounded-md border-2 border-black p-2 backdrop:bg-slate-200 backdrop:bg-opacity-50"
+  id="setStartingBalance"
+>
+  <div class="p-2">
+    <p class="text-[3vh] font-bold">Quick Start Guide:</p>
+    <p>1. Categories are used to classify expense transactions.</p>
+    <p>2. Sources are used to classify income transactions.</p>
+    <p>
+      3. The 'bills' category and 'split' source have been made specifically for
+      the split bills feature. Everytime you pay for a split bill or get paid a
+      split, a transaction with that category or source will be created.<br />Create
+      your own unique categories and sources for classifying other transactions.
+    </p>
+  </div>
+  <form method="POST" class="p-6" id="st-bal-form">
+    {% csrf_token %}
+    <label>Set an initial Starting Balance:</label>
+    <input type="number" name="balance" id="st-bal-val" />
+    <input
+      type="hidden"
+      value="{{request.user.id}}"
+      name="user"
+      id="categoryUser"
+    />
+    <input
+      type="submit"
+      class="rounded bg-green-600 px-4 py-2 text-white"
+      value="Set"
+    />
+  </form>
+</dialog>

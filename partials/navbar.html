@@ -1,30 +1,37 @@
 {% include 'flash.html' %}
-<nav class="text-[2vh] py-4">
-    {% load static %}
-    <ul class="flex justify-center items-center gap-[5vw]">
-        <li>
-            <img src={% static "images/asterisk-thin.svg" %} alt="logo" class="w-[4vw] max-w-7" />
-        </li>
-        <li>
-            <a href="/" class="hover:underline text-blue-900">Home</a>
-        </li>
-        <li>
-            <a href="/bills" class="hover:underline text-blue-900">Bills / Debts</a>
-        </li>
-        <li>
-            <a href="{% url 'profile' %}" class="hover:underline text-blue-900">Profile</a>
-        </li>
-        <li>
-            {% if user.is_authenticated %}
-            <form method="POST" action="logout"
-                class="bg-gray-600 hover:bg-gray-800 p-2 rounded text-white"
-            >
-                {% csrf_token %}
-                <input type="submit" value="Logout" />
-            </form>
-            {% else %}
-            <a href="{% url 'login' %}" class="bg-gray-600 hover:bg-gray-800 p-2 rounded text-white">Login</a>
-            {% endif %}
-        </li>
-    </ul>
+<nav class="py-4 text-[2vh]">
+  <input
+    type="hidden"
+    id="starting-balance"
+    value="{{request.user.starting_balance}}"
+  />
+  {% load static %}
+  <ul class="flex flex-col items-center justify-center gap-[5vw] md:flex-row">
+    <li>
+      <a href="/" class="text-blue-900 hover:underline">Home</a>
+    </li>
+    <li>
+      <a href="/bills" class="text-blue-900 hover:underline">Bills / Debts</a>
+    </li>
+    <li>
+      <a href="{% url 'profile' %}" class="text-blue-900 hover:underline"
+        >Profile</a
+      >
+    </li>
+    <li>
+      {% if user.is_authenticated %}
+      <a
+        href="{% url 'account_logout' %}"
+        class="rounded bg-gray-600 p-2 text-white hover:bg-gray-800"
+        >Logout</a
+      >
+      {% else %}
+      <a
+        href="{% url 'login' %}"
+        class="rounded bg-gray-600 p-2 text-white hover:bg-gray-800"
+        >Login</a
+      >
+      {% endif %}
+    </li>
+  </ul>
 </nav>

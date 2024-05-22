@@ -5,45 +5,56 @@ from rest_framework.response import Response
 from django.views import View
 from rest_framework.views import APIView
 from .models import Category, Source, Transaction, Bill
-from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth.mixins import LoginRequiredMixin
+from rest_framework.parsers import FormParser, MultiPartParser
 from .serializers import CategorySerializer, SourceSerializer, TransactionSerializer, ProfileDetailsSerializer
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from datetime import datetime
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from .utils import send_alert_mail, delete_transaction
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import os
 
 User = get_user_model()
 
 @login_required(login_url='login')
 def index(request):
-    today = datetime.today()
+    today = datetime.today().date()
+    print(today.replace(day=1))
+    first_date = request.GET.get('first-date', today.replace(day=1))
+    second_date = request.GET.get('sec-date', today.replace(day=30))
+    start_date = None
+    end_date = None
+    if first_date > second_date:
+        start_date = second_date
+        end_date = first_date
+    else:
+        start_date = first_date
+        end_date = second_date
+
     categories = Category.objects.filter(user=request.user)
     sources = Source.objects.filter(user=request.user)
-    transactions = Transaction.objects.filter(user=request.user, date__month=today.month).order_by('date')
-    expenses = transactions.filter(type='E', date__month=today.month).order_by('date')
-    incomelist = transactions.filter(type='I', date__month=today.month).order_by('date')
-    print("income", incomelist)
+    transactions = Transaction.objects.filter(user=request.user, date__range=[start_date, end_date]).order_by('date')
+    expenses = transactions.filter(type='E').order_by('date')
+    incomelist = transactions.filter(type='I').order_by('date')
     
     # Pie chart for expenses
     if expenses.count() == 0:
-        expenses_pie_html = '<p class="p-4">No expenses this month</p>'
+        expenses_pie_html = '<p class="p-4">No expenses in this range</p>'
     else:
         df = pd.DataFrame(list(expenses.values("category__name", "amount")))
-        fig = px.pie(df, values='amount', names='category__name', title='Expenses by Category this month')
+        fig = px.pie(df, values='amount', names='category__name', title='Expenses by Category in this range')
         expenses_pie_html = fig.to_html(full_html=False)
 
     # Pie chart for income
     if incomelist.count() == 0:
-        income_pie_html = '<p class="p-4">No income this month</p>'
+        income_pie_html = '<p class="p-4">No income in this range</p>'
     else:
         df = pd.DataFrame(list(incomelist.values("source__name", "amount")))
-        print("income pie chart")
-        print(df.head())
-        fig = px.pie(df, values='amount', names='source__name', title='Income by Source this month')
+        fig = px.pie(df, values='amount', names='source__name', title='Income by Source in this range')
         income_pie_html = fig.to_html(full_html=False)
 
     # Mixed bar chart for expenses and income over latest 6 months
@@ -58,10 +69,10 @@ def index(request):
 
     if transactions.count() > 0:
         df = pd.DataFrame(list(transactions.values("date", "init_balance")))
-        fig = px.line(df, x='date', y='init_balance', title='Balance this month')
+        fig = px.line(df, x='date', y='init_balance', title='Balance in this range')
         savings_html = fig.to_html(full_html=False)
     else:
-        savings_html = '<p class="p-4">No transactions yet</p>'
+        savings_html = '<p class="p-4">No transactions in this range</p>'
 
     # Category budgets 
     category_balances = []
@@ -91,6 +102,7 @@ def index(request):
 
     context = {
         'categories': categories,
+        'transactions': transactions,
         'sources': sources,
         'expenses': expenses,
         'incomelist': incomelist,
@@ -100,20 +112,18 @@ def index(request):
         'savings': savings_html,
         'category_budgets': category_budgets_html,
         'budget_overrun': budget_overrun,
+        'first_date': first_date,
+        'second_date': second_date,
     }
     return render(request, 'index.html', context=context)
 
 
-class Bills(View):
+class Bills(LoginRequiredMixin, View):
+    login_url = 'login'
+
     def get(self, request):
         created_bills = Bill.objects.filter(host=request.user)
         pending_bills = Bill.objects.filter(people=request.user)
-        for bill in pending_bills:
-            if request.user in bill.people.all():
-                bill.to_pay = int(bill.amount / (bill.people.count() + bill.paid.count()))
-        
-        for bill in created_bills:
-            bill.to_pay = int(bill.amount / (bill.people.count() + bill.paid.count()))
 
         context = {
             'created_bills': created_bills,
@@ -126,36 +136,38 @@ class Bills(View):
         bill = Bill.objects.create(host=request.user, bill_name=data['bill_name'], amount=data['amount'])
         people_list = data['people'].strip().split(',')
         email_list = []
-        owed = int(bill.amount) / (len(people_list))
         for person in people_list:
             if person:
                 bill.people.add(User.objects.get(username=person))
                 email_list.append(User.objects.get(username=person).email)
-        send_alert_mail(subject='Bill added', content=f'You have been added to bill {bill.bill_name}. You owe {int(owed)} to {request.user.username}.', recipients=email_list)
+        send_alert_mail(subject='Bill added', content=f'You have been added to bill {bill.bill_name}. You owe {bill.amount} to {request.user.username}.', recipients=email_list)
         bill.save()
         return redirect('bills')
 
 
-class PayBill(View):
+class PayBill(LoginRequiredMixin, View):
+    login_url = 'login'
+
     def post(self, request, pk):
         bill = Bill.objects.get(id=pk)
         user = User.objects.get(id=request.user.id)
         host = User.objects.get(id=bill.host.id)
-        amount = int(bill.amount / (bill.people.count()+bill.paid.count()))
         bill.people.remove(request.user)
         bill.paid.add(request.user)
         bill.save()
-        Transaction.objects.create(user=request.user, type='E', amount=amount, bill=bill, description=f'Paid for {bill.bill_name}', category=Category.objects.get(name='bills', user=request.user), source=None).save()
-        Transaction.objects.create(user=bill.host, type='I', amount=amount, bill=bill, description=f'{request.user.username}\'s split for {bill.bill_name}', category=None, source=Source.objects.get(name='split', user=request.user)).save()
-        send_alert_mail(subject='Split paid', content=f'{request.user.username} has paid {amount} for bill {bill.bill_name}', recipients=[bill.host.email])
-        user.balance -= amount
-        host.balance += amount
+        Transaction.objects.create(user=request.user, type='E', amount=bill.amount, bill=bill, description=f'Paid for {bill.bill_name}', category=Category.objects.get(name='bills', user=request.user), source=None).save()
+        Transaction.objects.create(user=bill.host, type='I', amount=bill.amount, bill=bill, description=f'{request.user.username}\'s split for {bill.bill_name}', category=None, source=Source.objects.get(name='split', user=request.user)).save()
+        send_alert_mail(subject='Split paid', content=f'{request.user.username} has paid {bill.amount} for bill {bill.bill_name}', recipients=[bill.host.email])
+        user.balance -= bill.amount
+        host.balance += bill.amount
         user.save()
         host.save()
         return redirect('bills')
 
 
-class DeleteBill(View):
+class DeleteBill(LoginRequiredMixin, View):
+    login_url = 'login'
+
     def post(self, request, pk):
         bill = Bill.objects.get(id=pk)
         email_list = []
@@ -169,7 +181,9 @@ class DeleteBill(View):
 
 
 
-class Profile(View):
+class Profile(LoginRequiredMixin, View):
+    login_url = 'login'
+
     def get(self, request):
         categories = Category.objects.filter(user=request.user)
 
@@ -215,14 +229,14 @@ def login_user(request):
     else:
         return render(request, 'login.html')
 
-
+@login_required(login_url='login')
 def logout_user(request):
     logout(request)
     return redirect('index')
 
 
-class CreateCategory(APIView):
-    permission_classes = [IsAuthenticated]
+class CreateCategory(LoginRequiredMixin, APIView):
+    login_url = 'login'
 
     def post(self, request):
         serializer = CategorySerializer(data=request.data)
@@ -230,30 +244,31 @@ class CreateCategory(APIView):
             serializer.save()
 
             html = ''
-            for category in Category.objects.all():
+            for category in Category.objects.filter(user=request.user):
                 html += f'<option value="{category.id}">{category.name}</option>'
             return Response(data=html, status=201)
         else:
             return Response(serializer.errors, status=400)
 
 
-class AddSource(APIView):
-    permission_classes = [IsAuthenticated]
+class AddSource(LoginRequiredMixin, APIView):
+    login_url = 'login'
 
     def post(self, request):
         serializer = SourceSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             html = ''
-            for source in Source.objects.all():
+            for source in Source.objects.filter(user=request.user):
                 html += f'<option value="{source.id}">{source.name}</option>'
             return Response(data=html, status=201)
         else:
             return Response(serializer.errors, status=400)
 
 
-class AddTransaction(APIView):
-    permission_classes = [IsAuthenticated]
+class AddTransaction(LoginRequiredMixin, APIView):
+    login_url = 'login'
+    parser_classes = [FormParser, MultiPartParser]
 
     def post(self, request):
         serializer = TransactionSerializer(data=request.data)
@@ -271,13 +286,22 @@ class AddTransaction(APIView):
                 user.balance += serializer.data['amount']
             user.save()
 
+            newer_transactions = Transaction.objects.filter(Q(date__gt=serializer.data['date']) | Q(date=serializer.data['date'], id__gt=serializer.data['id']), user=request.user).order_by('date', 'id')
+            prev_balance = serializer.data['init_balance']
+            print(f'Prev balance: {prev_balance}')
+            for transaction in newer_transactions:
+                # transaction.init_balance = prev_balance + transaction.amount if transaction.type == 'I' else prev_balance - transaction.amount
+                # prev_balance = transaction.init_balance
+                transaction.save()
 
-            html = f'''<tr class="border hover:bg-gray-300 cursor-pointer">
-                <td class="border">{serializer.data['id']}</td>
-                <td>{serializer.data['date']}</td>
-                <td>{serializer.data['amount']}</td>
-                <td>{group.name}</td>
-                <td>{serializer.data['description']}</td>
+
+            html = f'''
+            <tr class="border hover:bg-gray-300 cursor-pointer" onclick="showTransactionDetails({serializer.data['id']}, {serializer.data['amount']}, '', '{group.id}', '{serializer.data['description']}', '{serializer.data['date']}')">
+                <td class="px-6 py-4">{serializer.data['id']}</td>
+                <td class="px-6 py-4">{serializer.data['date']}</td>
+                <td class="px-6 py-4">{serializer.data['amount']}</td>
+                <td class="px-6 py-4">{group.name}</td>
+                <td class="px-6 py-4">{serializer.data['description']}</td>
             </tr>
             '''
             if send:
@@ -286,18 +310,23 @@ class AddTransaction(APIView):
         else:
             return Response(serializer.errors, status=400)
 
-class UpdateTransaction(View):
-    permission_classes = [IsAuthenticated]
+class UpdateTransaction(LoginRequiredMixin, View):
+    login_url = 'login'
 
     def post(self, request):
         data = request.POST
         user = User.objects.get(id=request.user.id)
         transaction = Transaction.objects.get(id=data['id'])
         transaction.date = data['date']
+        if request.FILES:
+            transaction.receipt and os.path.isfile(transaction.receipt.path) and os.remove(transaction.receipt.path)
+            transaction.receipt = request.FILES['receipt']
 
         prev_amount = transaction.amount
-        transaction.amount = data['amount']
-        user.balance += int(data['amount']) - prev_amount
+        transaction.amount = int(data['amount'])
+        user.balance -= int(data['amount']) - prev_amount
+        print('Difference:', int(data['amount']) - prev_amount)
+        print('New balance:', user.balance)
         user.save()
         transaction.description = data['description']
         if 'category' in data:
@@ -305,11 +334,14 @@ class UpdateTransaction(View):
         else:
             transaction.source = Source.objects.get(id=data['source'])
         transaction.save()
+        newer_transactions = Transaction.objects.filter(Q(date__gt=transaction.date) | Q(date=transaction.date, id__gt=transaction.id), user=transaction.user).order_by('date', 'id')
+        for newer_transaction in newer_transactions:
+            newer_transaction.save()
         return redirect('index')
     
 
-class DeleteTransaction(View):
-    permission_classes = [IsAuthenticated]
+class DeleteTransaction(LoginRequiredMixin, View):
+    login_url = 'login'
 
     def post(self, request):
         id = request.POST['id']
@@ -317,22 +349,24 @@ class DeleteTransaction(View):
         return redirect('index')
 
 
-class UpdateProfile(APIView):
-    permission_classes = [IsAuthenticated]
+class UpdateProfile(LoginRequiredMixin, APIView):
+    login_url = 'login'
 
     def post(self, request):
         serializer = ProfileDetailsSerializer(data=request.data)
         if serializer.is_valid():
             print(serializer.data)
             data = serializer.data
-            if 'mainBal' in data:
+            if 'startBal' in data:
                 user = User.objects.get(id=request.user.id)
-                user.balance = data['mainBal']
+                user.starting_balance = data['startBal']
+                user.balance = data['startBal']
                 user.save()
-            for category in data['categories']:
-                category_obj = Category.objects.get(id=int(category))
-                category_obj.budget = data['categories'][category]
-                category_obj.save()
+            if 'categories' in data:
+                for category in data['categories']:
+                    category_obj = Category.objects.get(id=int(category))
+                    category_obj.budget = data['categories'][category]
+                    category_obj.save()
             return Response(serializer.data, status=200)
         else:
             print(serializer.errors)
