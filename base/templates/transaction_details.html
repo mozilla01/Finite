@@ -21,10 +21,9 @@
     method="POST"
     action="update-transaction"
     enctype="multipart/form-data"
-    id="addExpenseForm"
-    class="max-w-[60vw] space-y-4 p-6"
+    id="transac-ud-form"
+    class="space-y-4 p-6"
   >
-    {% csrf_token %}
     <input
       type="hidden"
       value="{{request.user.id}}"
@@ -74,6 +73,7 @@
         class="bg-gray-200 p-1"
         type="file"
         name="receipt"
+        id="transacReceipt"
       />
     </div>
     <input

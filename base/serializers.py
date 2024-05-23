@@ -5,6 +5,12 @@ class ProfileDetailsSerializer(serializers.Serializer):
     startBal = serializers.IntegerField(required=False)
     categories = serializers.JSONField(required=False)
 
+
+class GraphRequestSerializer(serializers.Serializer):
+    first_date = serializers.DateField()
+    second_date = serializers.DateField()
+
+
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category

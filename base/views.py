@@ -7,115 +7,58 @@ from rest_framework.views import APIView
 from .models import Category, Source, Transaction, Bill
 from django.contrib.auth.mixins import LoginRequiredMixin
 from rest_framework.parsers import FormParser, MultiPartParser
-from .serializers import CategorySerializer, SourceSerializer, TransactionSerializer, ProfileDetailsSerializer
+from .serializers import CategorySerializer, SourceSerializer, TransactionSerializer, ProfileDetailsSerializer, GraphRequestSerializer
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
-from datetime import datetime
-from django.db.models import Sum, Q
+from django.db.models import Q
 from .utils import send_alert_mail, delete_transaction
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
+from .utils import generate_graphs
 import os
+import json
 
 User = get_user_model()
 
 @login_required(login_url='login')
 def index(request):
-    today = datetime.today().date()
-    print(today.replace(day=1))
-    first_date = request.GET.get('first-date', today.replace(day=1))
-    second_date = request.GET.get('sec-date', today.replace(day=30))
-    start_date = None
-    end_date = None
-    if first_date > second_date:
-        start_date = second_date
-        end_date = first_date
-    else:
-        start_date = first_date
-        end_date = second_date
 
     categories = Category.objects.filter(user=request.user)
     sources = Source.objects.filter(user=request.user)
-    transactions = Transaction.objects.filter(user=request.user, date__range=[start_date, end_date]).order_by('date')
-    expenses = transactions.filter(type='E').order_by('date')
-    incomelist = transactions.filter(type='I').order_by('date')
-    
-    # Pie chart for expenses
-    if expenses.count() == 0:
-        expenses_pie_html = '<p class="p-4">No expenses in this range</p>'
-    else:
-        df = pd.DataFrame(list(expenses.values("category__name", "amount")))
-        fig = px.pie(df, values='amount', names='category__name', title='Expenses by Category in this range')
-        expenses_pie_html = fig.to_html(full_html=False)
-
-    # Pie chart for income
-    if incomelist.count() == 0:
-        income_pie_html = '<p class="p-4">No income in this range</p>'
-    else:
-        df = pd.DataFrame(list(incomelist.values("source__name", "amount")))
-        fig = px.pie(df, values='amount', names='source__name', title='Income by Source in this range')
-        income_pie_html = fig.to_html(full_html=False)
-
-    # Mixed bar chart for expenses and income over latest 6 months
-    if Transaction.objects.filter(user=request.user).count() == 0:
-        mixed_bar_html = '<p class="p-4">No transactions yet</p>'
-    else:
-        df = pd.DataFrame(list(Transaction.objects.filter(user=request.user).values("date__month", "amount", "type")))
-        fig = px.bar(df, x='date__month', y='amount', color='type', title='Expenses and Income over last 6 months')
-        mixed_bar_html = fig.to_html(full_html=False)
-
-    # line chart for savings this month
-
-    if transactions.count() > 0:
-        df = pd.DataFrame(list(transactions.values("date", "init_balance")))
-        fig = px.line(df, x='date', y='init_balance', title='Balance in this range')
-        savings_html = fig.to_html(full_html=False)
-    else:
-        savings_html = '<p class="p-4">No transactions in this range</p>'
-
-    # Category budgets 
-    category_balances = []
-    category_expenses = []
-    category_names = []
-    budget_overrun = []
-    for category in categories:
-         if category.budget:
-            sum = expenses.filter(category=category).aggregate(Sum('amount'))['amount__sum'] or 0
-            category_expenses.append(sum)
-            if sum > category.budget:
-                budget_overrun.append(category.name)
-            category_balances.append(category.budget - sum)
-            category_names.append(category.name)
-    
-    fig = go.Figure()
-    fig.add_trace(go.Bar(y=[category for category in category_names], x=category_expenses, orientation='h', marker=dict(
-        color='rgba(246, 78, 139, 1.0)',
-        line=dict(color='rgba(58, 71, 80, 1.0)', width=3)
-    ), name='Expenses'))
-    fig.add_trace(go.Bar(y=[category for category in category_names], x=category_balances, orientation='h', marker=dict(
-        color='rgba(58, 71, 80, 0.2)',
-        line=dict(color='rgba(58, 71, 80, 1.0)', width=3)
-    ), name='Remaining Budget'))
-    fig.update_layout(barmode='stack', title='Category Budgets this month')
-    category_budgets_html = fig.to_html(full_html=False)
 
     context = {
         'categories': categories,
-        'transactions': transactions,
         'sources': sources,
-        'expenses': expenses,
-        'incomelist': incomelist,
-        'expense_pie': expenses_pie_html,
-        'income_pie': income_pie_html,
-        'mixed_bar': mixed_bar_html,
-        'savings': savings_html,
-        'category_budgets': category_budgets_html,
-        'budget_overrun': budget_overrun,
-        'first_date': first_date,
-        'second_date': second_date,
     }
     return render(request, 'index.html', context=context)
+
+
+class RenderGraphs(LoginRequiredMixin, APIView):
+    login_url = 'login'
+
+    def post(self, request):
+        serializer = GraphRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            data = serializer.data
+            first_date = data['first_date']
+            second_date = data['second_date']
+            user = User.objects.get(id=request.user.id)
+            start_date = None
+            end_date = None
+            if first_date > second_date:
+                start_date = second_date
+                end_date = first_date
+            else:
+                start_date = first_date
+                end_date = second_date
+
+            context = generate_graphs(user, start_date, end_date)
+            context['first_date'] = first_date
+            context['second_date'] = second_date
+            context = json.dumps(context)
+
+            return Response(context, status=200)
+        else:
+            print(serializer.errors)
+            return Response(serializer.errors, status=400)
 
 
 class Bills(LoginRequiredMixin, View):
@@ -310,34 +253,24 @@ class AddTransaction(LoginRequiredMixin, APIView):
         else:
             return Response(serializer.errors, status=400)
 
-class UpdateTransaction(LoginRequiredMixin, View):
+class UpdateTransaction(LoginRequiredMixin, APIView):
     login_url = 'login'
 
-    def post(self, request):
-        data = request.POST
-        user = User.objects.get(id=request.user.id)
-        transaction = Transaction.objects.get(id=data['id'])
-        transaction.date = data['date']
-        if request.FILES:
-            transaction.receipt and os.path.isfile(transaction.receipt.path) and os.remove(transaction.receipt.path)
-            transaction.receipt = request.FILES['receipt']
-
+    def post(self, request, pk):
+        transaction = Transaction.objects.get(id=pk)
         prev_amount = transaction.amount
-        transaction.amount = int(data['amount'])
-        user.balance -= int(data['amount']) - prev_amount
-        print('Difference:', int(data['amount']) - prev_amount)
-        print('New balance:', user.balance)
-        user.save()
-        transaction.description = data['description']
-        if 'category' in data:
-            transaction.category = Category.objects.get(id=data['category'])
+        serializer = TransactionSerializer(instance=transaction, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            user = User.objects.get(id=request.user.id)
+            user.balance -= int(serializer.data['amount']) - prev_amount
+            user.save()
+            newer_transactions = Transaction.objects.filter(Q(date__gt=transaction.date) | Q(date=transaction.date, id__gt=transaction.id), user=transaction.user).order_by('date', 'id')
+            for newer_transaction in newer_transactions:
+                newer_transaction.save()
+            return Response(data=serializer.data, status=201)
         else:
-            transaction.source = Source.objects.get(id=data['source'])
-        transaction.save()
-        newer_transactions = Transaction.objects.filter(Q(date__gt=transaction.date) | Q(date=transaction.date, id__gt=transaction.id), user=transaction.user).order_by('date', 'id')
-        for newer_transaction in newer_transactions:
-            newer_transaction.save()
-        return redirect('index')
+            return Response(serializer.errors, status=400)
     
 
 class DeleteTransaction(LoginRequiredMixin, View):

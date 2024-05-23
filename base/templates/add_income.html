@@ -1,10 +1,11 @@
 <dialog
   class="modal fixed rounded-md border-2 border-black p-2 backdrop:bg-slate-200 backdrop:bg-opacity-50"
+  id="addIncomeModal"
 >
   <button class="closeBtn border px-1 hover:bg-black hover:text-white">
     x
   </button>
-  <form method="POST" id="addIncomeForm" class="max-w-[60vw] space-y-4 p-6">
+  <form method="POST" id="addIncomeForm" class="space-y-4 p-6">
     {% csrf_token %}
     <div class="flex flex-col md:flex-row">
       <label>Amount:</label>

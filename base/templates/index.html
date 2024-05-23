@@ -1,104 +1,103 @@
 <!doctype html>
 <html>
-  <head>
-    {% load static %}
-    <title>Home</title>
-    <link href={% static "styles.css" %} rel="stylesheet" type="text/css">
-  </head>
-  <body class="text-[2vh] font-mono">
-      {% include 'navbar.html' %}
-      <div class="grid place-items-center">
-      <main class="md:max-w-[80vw] px-10 py-10">
-    <h1 class="text-[5vh] font-bold font-sans">Dashboard</h1>
-    <p class="my-2">{{user.username}}'s expenses, income and savings</p>
+    <head>
+        {% load static %}
+        <title>Home</title>
+        <link href={% static "styles.css" %} rel="stylesheet" type="text/css">
+    </head>
+    <body class="text-[2vh] font-mono">
+        {% include 'navbar.html' %}
+        <div class="grid place-items-center">
+            <main class="md:max-w-[80vw] px-10 py-10">
+                <h1 class="text-[5vh] font-bold font-sans">Dashboard</h1>
+                <p class="my-2">{{user.username}}'s expenses, income and savings</p>
 
-    <div class="flex flex-wrap w-full justify-evenly mb-4">
-        <div class="py-10">
-        <p class="text-center my-10 text-[4vh] font-sans">Quick actions</p>
-        <div class="flex flex-wrap justify-center gap-[2vw]">
-    <button class="bg-green-600 text-white p-2 rounded openBtn my-2">Create Category</button>
-    <button class="bg-green-600 text-white p-2 rounded openBtn my-2">Add Source</button>
-    <button class="bg-green-600 text-white p-2 rounded openBtn my-2">Add Expense</button>
-    <button class="bg-green-600 text-white p-2 rounded openBtn my-2">Add Income</button>
+                <div class="flex flex-wrap w-full justify-evenly mb-4">
+                    <div class="py-10">
+                        <p class="text-center my-10 text-[4vh] font-sans">Quick actions</p>
+                        <div class="flex flex-wrap justify-center gap-[2vw]">
+                            <button class="bg-green-600 text-white p-2 rounded openBtn my-2">Create Category</button>
+                            <button class="bg-green-600 text-white p-2 rounded openBtn my-2">Add Source</button>
+                            <button class="bg-green-600 text-white p-2 rounded openBtn my-2">Add Expense</button>
+                            <button class="bg-green-600 text-white p-2 rounded openBtn my-2">Add Income</button>
+                        </div>
+                    </div>
+                    {% include 'create_category.html' %}
+                    {% include 'add_source.html' %}
+                    {% include 'add_expense.html' %}
+                    {% include 'add_income.html' %}
+                </div>
+                <div class="py-10">
+                    <p class="text-[3vh] font-sans">Overview</p>
+                    {% if user.balance < 0 %}
+                    <p class="text-red-400 font-bold">You balance is running in negative.</p>
+                    {% endif %}
+                    {% for category in budget_overrun %}
+                    <p class="text-red-400 font-bold">You have overrun you {{category}} budget.</p>
+                    {% endfor %}
+                    <p class="my-4 text-gray-600">We'll let you know if you're running low on funds or have exceeded your budget.</p>
+                </div>
+                <div data-tables class="flex flex-wrap justify-center gap-28 my-10 py-6">
+                    <div  class="overflow-x-auto w-full">
+                        <p class="text-[3vh] font-sans">Transactions</p>
+                        <form id="date-range" class="my-4">
+                            <span>Select date range: </span> It is from {{ first_date }} to {{ second_date }}<br />
+                            <input class="border md:border-b border-black" type="date" name="first-date" value="{{ first_date|date:'Y-m-d' }}" id="start-date" /> to
+                            <input class="border md:border-b border-black" type="date" name="sec-date" value="{{ second_date|date:'Y-m-d' }}" id="end-date" />
+                            <input type="submit" value="Filter" id="filter-btn" class="p-2 rounded bg-gray-700 text-white hover:bg-black" />
+                        </form>
+                        <table class="block max-h-[50vh] overflow-y-scroll my-6 w-full text-[2vh] text-left rtl:text-right text-gray-500">
+               <thead class="text-[2vh] text-gray-700 uppercase bg-gray-50">
+                                <th scope="col" class="px-6 py-3">
+                                    Transaction ID</th>
+                                <th scope="col" class="px-6 py-3">
+                                    Transaction Date</th>
+                                <th scope="col" class="px-6 py-3">
+                                    Amount</th>
+                                <th scope="col" class="px-6 py-3">
+                                    Category</th>
+                                <th scope="col" class="px-6 py-3">
+                                    Description</th>
+                                <th scope="col" class="px-6 py-3">
+                                    Balance</th>
+                            </thead>
+                            <tbody id="transaction-table">
+                                {% for transaction in transactions %}
+                                {% if transaction.type == "E" %}
+                                <tr class="border hover:bg-gray-300 cursor-pointer" onclick="showTransactionDetails({{transaction.id}}, {{transaction.amount}}, '', '{{transaction.category.id}}', '{{transaction.description}}', '{{transaction.date|date:"Y-m-d"}}', '{{transaction.receipt}}')">
+                                    {% else %}
+                                    <tr class="border hover:bg-gray-300 cursor-pointer" onclick="showTransactionDetails({{transaction.id}}, {{transaction.amount}}, '{{transaction.source.id}}', '', '{{transaction.description}}', '{{transaction.date|date:"Y-m-d"}}')">
+                                        {% endif %}
+                                        <td class="px-6 py-4">{{transaction.id}}</td>
+                                        <td class="px-6 py-4">{{transaction.date}}</td>
+                                        {% if transaction.type == "E" %}
+                                        <td class="px-6 py-4 text-red-600">{{transaction.amount}}</td>
+                                        <td class="px-6 py-4">{{transaction.category.name}}</td>
+                                        {% else %}
+                                        <td class="px-6 py-4 text-green-600">{{transaction.amount}}</td>
+                                        <td class="px-6 py-4">{{transaction.source.name}}</td>
+                                        {% endif %}
+                                        <td class="px-6 py-4">{{transaction.description}}</td>
+                                        <td class="px-6 py-4 text-black">{{transaction.init_balance}}</td>
+                                    </tr>
+                                    {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex flex-wrap justify-center" id="graphs">
+                        <img src="{% static 'images/loading.gif' %}" alt="Expense Pie Chart" />
+                        <img src="{% static 'images/loading.gif' %}" alt="Income pie chart" />
+                        <img src="{% static 'images/loading.gif' %}" alt="Mixed bar graph" />
+                        <img src="{% static 'images/loading.gif' %}" alt="Savings Line chart" />
+                        <img src="{% static 'images/loading.gif' %}" alt="Category budgets" />
+                    </div>
+                </div>
+                {% include 'transaction_details.html' %}
+                {% include 'set_starting_balance.html' %}
+            </main>
         </div>
-    </div>
-    {% include 'create_category.html' %}
-    {% include 'add_source.html' %}
-    {% include 'add_expense.html' %}
-    {% include 'add_income.html' %}
-    </div>
-    <div class="py-10">
-    <p class="text-[3vh] font-sans">Overview</p>
-    {% if user.balance < 0 %}
-    <p class="text-red-400 font-bold">You balance is running in negative.</p>
-    {% endif %}
-    {% for category in budget_overrun %}
-    <p class="text-red-400 font-bold">You have overrun you {{category}} budget.</p>
-    {% endfor %}
-    <p class="my-4 text-gray-600">We'll let you know if you're running low on funds or have exceeded your budget.</p>
-    </div>
-    <div data-tables class="flex flex-wrap justify-center gap-28 my-10 py-6">
-    <div  class="overflow-x-auto w-full">
-    <p class="text-[3vh] font-sans">Transactions</p>
-    <form id="date-range" class="my-4">
-    <span>Select date range: </span>
-    <input class="border md:border-b border-black" type="date" name="first-date" value={{first_date|date:"Y-m-d"}} id="start-date" /> to 
-    <input class="border md:border-b border-black" type="date" name="sec-date" value={{second_date|date:"Y-m-d"}} id="end-date" />
-    <input type="submit" value="Filter" class="p-2 rounded bg-gray-700 text-white hover:bg-black" />
-    </form>
-        <table class="my-6 w-full text-[2vh] text-left rtl:text-right text-gray-500">
-            <thead class="text-[2vh] text-gray-700 uppercase bg-gray-50">
-                            <th scope="col" class="px-6 py-3">
-                Transaction ID</th>
-                            <th scope="col" class="px-6 py-3">
-                Transaction Date</th>
-                            <th scope="col" class="px-6 py-3">
-                Amount</th>
-                            <th scope="col" class="px-6 py-3">
-                Category</th>
-                            <th scope="col" class="px-6 py-3">
-                Description</th>
-                            <th scope="col" class="px-6 py-3">
-                Balance</th>
-        </thead>
-        <tbody id="expense-table">
-            {% for transaction in transactions %}
-            {% if transaction.type == "E" %}
-            <tr class="border hover:bg-gray-300 cursor-pointer" onclick="showTransactionDetails({{transaction.id}}, {{transaction.amount}}, '', '{{transaction.category.id}}', '{{transaction.description}}', '{{transaction.date|date:"Y-m-d"}}', '{{transaction.receipt}}')">
-            {% else %}
-            <tr class="border hover:bg-gray-300 cursor-pointer" onclick="showTransactionDetails({{transaction.id}}, {{transaction.amount}}, '{{transaction.source.id}}', '', '{{transaction.description}}', '{{transaction.date|date:"Y-m-d"}}')">
-            {% endif %}
-                <td class="px-6 py-4">{{transaction.id}}</td>
-                <td class="px-6 py-4">{{transaction.date}}</td>
-                {% if transaction.type == "E" %}
-                <td class="px-6 py-4 text-red-600">{{transaction.amount}}</td>
-                <td class="px-6 py-4">{{transaction.category.name}}</td>
-                {% else %}
-                <td class="px-6 py-4 text-green-600">{{transaction.amount}}</td>
-                <td class="px-6 py-4">{{transaction.source.name}}</td>
-                {% endif %}
-                <td class="px-6 py-4">{{transaction.description}}</td>
-                <td class="px-6 py-4 text-black">{{transaction.init_balance}}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-    </div>
-    <div  class="overflow-x-auto">
-    <div class="flex flex-wrap justify-center">
-        <div>{{expense_pie|safe}}</div>
-        <div>{{income_pie|safe}}</div>
-        <div>{{mixed_bar|safe}}</div>
-        <div>{{savings|safe}}</div>
-        <div>{{category_budgets|safe}}</div>
-    </div>
-</div>
-    {% include 'transaction_details.html' %}
-    {% include 'set_starting_balance.html' %}
-      </main>
-    </div>
-  </body>
-  <script src="{% static 'js/interactions.js' %}"></script>
-  <script src="{% static 'js/modal.js' %}"></script>
+    </body>
+    <script src="{% static 'js/interactions.js' %}"></script>
 </html>

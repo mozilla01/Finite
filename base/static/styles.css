@@ -683,6 +683,14 @@ video {
   top: 0.5rem;
 }
 
+.left-0 {
+  left: 0px;
+}
+
+.top-0 {
+  top: 0px;
+}
+
 .isolate {
   isolation: isolate;
 }
@@ -913,6 +921,14 @@ video {
   height: 100vh;
 }
 
+.max-h-\[30vh\] {
+  max-height: 30vh;
+}
+
+.max-h-\[50vh\] {
+  max-height: 50vh;
+}
+
 .w-1 {
   width: 0.25rem;
 }
@@ -937,6 +953,38 @@ video {
   width: 100vw;
 }
 
+.w-1\/2 {
+  width: 50%;
+}
+
+.w-\[1vw\] {
+  width: 1vw;
+}
+
+.w-\[2vw\] {
+  width: 2vw;
+}
+
+.w-\[5vw\] {
+  width: 5vw;
+}
+
+.w-\[10vw\] {
+  width: 10vw;
+}
+
+.w-\[7vw\] {
+  width: 7vw;
+}
+
+.w-\[10vh\] {
+  width: 10vh;
+}
+
+.w-\[15vh\] {
+  width: 15vh;
+}
+
 .min-w-\[100px\] {
   min-width: 100px;
 }
@@ -947,6 +995,10 @@ video {
 
 .max-w-\[80vw\] {
   max-width: 80vw;
+}
+
+.max-w-\[30vh\] {
+  max-width: 30vh;
 }
 
 .flex-shrink {
@@ -1290,6 +1342,10 @@ video {
 
 .grid-flow-col-dense {
   grid-auto-flow: column dense;
+}
+
+.grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
 }
 
 .flex-row {
@@ -2287,10 +2343,6 @@ video {
   font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
-.text-\[1vh\] {
-  font-size: 1vh;
-}
-
 .text-\[2vh\] {
   font-size: 2vh;
 }
@@ -2951,12 +3003,21 @@ video {
     max-width: 80vw;
   }
 
+  .md\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .md\:flex-row {
     flex-direction: row;
   }
 
   .md\:border-b {
     border-bottom-width: 1px;
+  }
+
+  .md\:border-black {
+    --tw-border-opacity: 1;
+    border-color: rgb(0 0 0 / var(--tw-border-opacity));
   }
 
   .md\:px-0 {
