@@ -126,8 +126,6 @@ def generate_graphs(user, start_date, end_date):
         <td class="px-6 py-4 text-black">{transaction.init_balance}</td>
         </tr>
         '''
-    print('HTML table:')
-    print(table_html)
 
     # Category budgets 
     category_balances = []

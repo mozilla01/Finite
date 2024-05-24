@@ -206,25 +206,27 @@ const showTransactionDetails = async (
 document
   .getElementById("transac-ud-form")
   .addEventListener("submit", async (e) => {
-    e.preventDefault();
+      e.preventDefault();
       const id = document.getElementById("transac-id").value;
-    const csrftoken = getCookie("csrftoken");
-    const amount = document.getElementById("transacAmount").value;
-    const category = document.getElementById("categorySelectExpenseForm").value;
-    const source = document.getElementById("transacSource").value;
-    const date = document.getElementById("transacDate").value;
-    const description = document.getElementById("transacDescription").value;
-    const receipt = document.getElementById("transacReceipt").files[0];
+      const csrftoken = getCookie("csrftoken");
+      const amount = document.getElementById("transacAmount").value;
+      const category = document.getElementById("categorySelectExpenseForm").value;
+      const source = document.getElementById("transacSource").value;
+      const date = document.getElementById("transacDate").value;
+      const description = document.getElementById("transacDescription").value;
+      const receipt = document.getElementById("transacReceipt").files[0];
       const user = document.getElementById("transacUser").value;
 
     let formData = new FormData();
     formData.append("amount", amount);
-    formData.append("category", category);
     formData.append("date", date);
     formData.append("description", description);
-      if (category)
+      if (category) {
     formData.append("type", "E");
+    formData.append("category", category);
+      }
       if (source) {
+    formData.append("type", "I");
     formData.append("source", source);
       }
     if (receipt) {

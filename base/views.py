@@ -99,7 +99,7 @@ class PayBill(LoginRequiredMixin, View):
         bill.paid.add(request.user)
         bill.save()
         Transaction.objects.create(user=request.user, type='E', amount=bill.amount, bill=bill, description=f'Paid for {bill.bill_name}', category=Category.objects.get(name='bills', user=request.user), source=None).save()
-        Transaction.objects.create(user=bill.host, type='I', amount=bill.amount, bill=bill, description=f'{request.user.username}\'s split for {bill.bill_name}', category=None, source=Source.objects.get(name='split', user=request.user)).save()
+        Transaction.objects.create(user=bill.host, type='I', amount=bill.amount, bill=bill, description=f'{request.user.username}s split for {bill.bill_name}', category=None, source=Source.objects.get(name='split', user=request.user)).save()
         send_alert_mail(subject='Split paid', content=f'{request.user.username} has paid {bill.amount} for bill {bill.bill_name}', recipients=[bill.host.email])
         user.balance -= bill.amount
         host.balance += bill.amount
