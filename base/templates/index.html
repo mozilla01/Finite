@@ -4,6 +4,7 @@
         {% load static %}
         <title>Home</title>
         <link href={% static "styles.css" %} rel="stylesheet" type="text/css">
+        <script src="https://cdn.plot.ly/plotly-2.32.0.min.js" charset="utf-8"></script>
     </head>
     <body class="text-[2vh] font-mono">
         {% include 'navbar.html' %}
@@ -41,7 +42,7 @@
                     <div  class="overflow-x-auto w-full">
                         <p class="text-[3vh] font-sans">Transactions</p>
                         <form id="date-range" class="my-4">
-                            <span>Select date range: </span> It is from {{ first_date }} to {{ second_date }}<br />
+                            <span>Select date range: </span><br />
                             <input class="border md:border-b border-black" type="date" name="first-date" value="{{ first_date|date:'Y-m-d' }}" id="start-date" /> to
                             <input class="border md:border-b border-black" type="date" name="sec-date" value="{{ second_date|date:'Y-m-d' }}" id="end-date" />
                             <input type="submit" value="Filter" id="filter-btn" class="p-2 rounded bg-gray-700 text-white hover:bg-black" />

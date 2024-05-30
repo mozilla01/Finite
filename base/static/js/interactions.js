@@ -70,8 +70,8 @@ const formatDate = (date) => {
 const renderGraphs = async () => {
     let today = new Date();
     let oneWeekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-    let first_date = document.getElementById("start-date").value;
-    let second_date = document.getElementById("end-date").value;
+    let first_date = localStorage.getItem('first-date');
+    let second_date = localStorage.getItem('second-date');
     if (!first_date) {
         const date1 = formatDate(oneWeekAgo);
         first_date = date1;
@@ -92,7 +92,6 @@ const renderGraphs = async () => {
         body: JSON.stringify({first_date: first_date, second_date: second_date }),
     });
     let data = await response.json();
-    console.log(data);
     data = JSON.parse(data);
     const graphsDiv = document.getElementById("graphs");
     graphsDiv.innerHTML = '';
@@ -110,6 +109,10 @@ window.onload = renderGraphs;
 document.getElementById('filter-btn').addEventListener('click', (e) => {
     e.preventDefault();
     showFlash(1, "Filtering data...");
+    let first_date = document.getElementById("start-date").value;
+    let second_date = document.getElementById("end-date").value;
+    localStorage.setItem('first-date', first_date);
+    localStorage.setItem('second-date', second_date);
     renderGraphs();
 });
 

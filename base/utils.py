@@ -62,7 +62,6 @@ def generate_report(user, start_date, end_date):
 def generate_graphs(user, start_date, end_date):
     transactions = Transaction.objects.filter(user=user, date__range=[start_date, end_date]).order_by('date')
     categories = Category.objects.filter(user=user)
-    sources = Source.objects.filter(user=user)
     expenses = transactions.filter(type='E').order_by('date')
     incomelist = transactions.filter(type='I').order_by('date')
     
@@ -72,7 +71,7 @@ def generate_graphs(user, start_date, end_date):
     else:
         df = pd.DataFrame(list(expenses.values("category__name", "amount")))
         fig = px.pie(df, values='amount', names='category__name', title=f'Expenses by Category between {start_date} and {end_date}')
-        expenses_pie_html = fig.to_html(full_html=False)
+        expenses_pie_html = fig.to_html(full_html=False, include_plotlyjs='cdn')
 
     # Pie chart for income
     if incomelist.count() == 0:
@@ -80,7 +79,7 @@ def generate_graphs(user, start_date, end_date):
     else:
         df = pd.DataFrame(list(incomelist.values("source__name", "amount")))
         fig = px.pie(df, values='amount', names='source__name', title=f'Income by Source between {start_date} and {end_date}')
-        income_pie_html = fig.to_html(full_html=False)
+        income_pie_html = fig.to_html(full_html=False, include_plotlyjs='cdn')
 
     # Mixed bar chart for expenses and income over latest 6 months
     if Transaction.objects.filter(user=user).count() == 0:
@@ -88,14 +87,14 @@ def generate_graphs(user, start_date, end_date):
     else:
         df = pd.DataFrame(list(Transaction.objects.filter(user=user).values("date__month", "amount", "type")))
         fig = px.bar(df, x='date__month', y='amount', color='type', title='Expenses and Income over last 6 months')
-        mixed_bar_html = fig.to_html(full_html=False)
+        mixed_bar_html = fig.to_html(full_html=False, include_plotlyjs='cdn')
 
     # line chart for savings this month
 
     if transactions.count() > 0:
         df = pd.DataFrame(list(transactions.values("date", "init_balance")))
         fig = px.line(df, x='date', y='init_balance', title=f'Balance between {start_date} and {end_date}')
-        savings_html = fig.to_html(full_html=False)
+        savings_html = fig.to_html(full_html=False, include_plotlyjs='cdn')
     else:
         savings_html = ''
 
@@ -151,7 +150,7 @@ def generate_graphs(user, start_date, end_date):
         line=dict(color='rgba(58, 71, 80, 1.0)', width=3)
     ), name='Remaining Budget'))
     fig.update_layout(barmode='stack', title='Category Budgets this month')
-    category_budgets_html = fig.to_html(full_html=False)
+    category_budgets_html = fig.to_html(full_html=False, include_plotlyjs='cdn')
 
     context = {
         'expense_pie': expenses_pie_html,

@@ -152,6 +152,8 @@ def signup(request):
 
             Category.objects.create(user=user, name='bills').save()
             Source.objects.create(user=user, name='split').save()
+            user = authenticate(request=request, username=username, password=password)
+            login(request, user)
             return redirect('index')
         except:
             return render(request, 'signup.html', {'error': 'Username already exists'})
