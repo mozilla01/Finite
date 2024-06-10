@@ -1,37 +1,51 @@
 {% include 'flash.html' %}
-<nav class="py-4 text-[2vh]">
-  <input
-    type="hidden"
-    id="starting-balance"
-    value="{{request.user.starting_balance}}"
-  />
-  {% load static %}
-  <ul class="flex items-center justify-center gap-[5vw]">
-    <li>
-      <a href="/" class="text-blue-900 hover:underline">Home</a>
-    </li>
-    <li>
-      <a href="/bills" class="text-blue-900 hover:underline">Bills / Debts</a>
-    </li>
-    <li>
-      <a href="{% url 'profile' %}" class="text-blue-900 hover:underline"
-        >Profile</a
-      >
-    </li>
-    <li>
-      {% if user.is_authenticated %}
-      <a
-        href="{% url 'account_logout' %}"
-        class="rounded bg-gray-600 p-2 text-white hover:bg-gray-800"
-        >Logout</a
-      >
-      {% else %}
-      <a
-        href="{% url 'login' %}"
-        class="rounded bg-gray-600 p-2 text-white hover:bg-gray-800"
-        >Login</a
-      >
-      {% endif %}
-    </li>
-  </ul>
+<nav class="py-4 text-[2vh] border-b border-slate-700 rounded-md">
+    <input
+        type="hidden"
+        id="starting-balance"
+        value="{{request.user.starting_balance}}"
+    />
+    {% load static %}
+    <ul class="flex flex-col items-center justify-center gap-[5vw] md:flex-row">
+        <span
+            id="snack-menu"
+            class="flex hidden flex-col items-center justify-center gap-[5vw] md:flex md:flex-row">
+            <li>
+                <a href="/" class="text-blue-900 hover:underline">Home</a>
+            </li>
+            <li>
+                <a href="/bills" class="text-blue-900 hover:underline"
+                    >Bills / Debts</a>
+            </li>
+            <li>
+                <a
+                    href="{% url 'profile' %}"
+                    class="text-blue-900 hover:underline"
+                    >Profile</a>
+            </li>
+            <li>
+                {% if user.is_authenticated %}
+                <a
+                    href="{% url 'account_logout' %}"
+                    class="rounded bg-gray-600 p-2 text-white hover:bg-gray-800"
+                    >Logout</a
+                >
+                {% else %}
+                <a
+                    href="{% url 'login' %}"
+                    class="rounded bg-gray-600 p-2 text-white hover:bg-gray-800"
+                    >Login</a
+                >
+                {% endif %}
+            </li>
+        </span>
+        <li class="inline cursor-pointer md:hidden" id="snack">
+            |||
+        </li>
+    </ul>
 </nav>
+<script>
+    document.getElementById("snack").addEventListener("click", () => {
+        document.getElementById("snack-menu").classList.toggle("hidden");
+    });
+</script>

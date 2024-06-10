@@ -1,5 +1,5 @@
 <dialog
-  class="modal fixed rounded-md border-2 border-black p-2 backdrop:bg-slate-200 backdrop:bg-opacity-50"
+  class="modal fixed rounded-md border shadow-2xl border-black p-2 backdrop:bg-slate-200 backdrop:bg-opacity-50"
   id="addIncomeModal"
 >
   <button class="closeBtn border px-1 hover:bg-black hover:text-white">
@@ -7,17 +7,20 @@
   </button>
   <form method="POST" id="addIncomeForm" class="space-y-4 p-6">
     {% csrf_token %}
+    <h1 class="text-[3vh]">Add Income</h1>
+    <hr />
     <div class="flex flex-col md:flex-row">
-      <label>Amount:</label>
+      <label>Amount: </label>
       <input
         type="number"
         class="rounded bg-gray-200 p-1"
         name="amount"
         id="incomeAmount"
+        placeholder="Income amount..."
       />
     </div>
     <div class="flex flex-col md:flex-row">
-      <label>Source:</label>
+      <label>Source: </label>
       <select id="sourceSelectIncomeForm" class="rounded bg-gray-200 p-1">
         {% for source in sources %}
         <option value="{{source.id}}">{{source.name}}</option>
@@ -25,21 +28,23 @@
       </select>
     </div>
     <div class="flex flex-col md:flex-row">
-      <label>Date:</label>
+      <label>Date: </label>
       <input
         type="date"
         name="date"
         class="rounded bg-gray-200 p-1"
         id="incomeDate"
+        placeholder="Income date..."
       />
     </div>
     <div class="flex flex-col md:flex-row">
-      <label>Description:</label>
+      <label>Description: </label>
       <input
         class="rounded bg-gray-200 p-1"
         type="text"
         name="description"
         id="incomeDescription"
+        placeholder="Income description..."
       />
     </div>
     <input
@@ -48,6 +53,6 @@
       name="user"
       id="incomeUser"
     />
-    <input type="submit" class="bg-black text-white" />
+    <input type="submit" value="Create" class="bg-black text-white p-1 rounded" />
   </form>
 </dialog>

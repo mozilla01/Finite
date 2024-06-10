@@ -1,15 +1,16 @@
 <html>
   <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     {% load static %}
     <title>Home</title>
     <link href={% static "styles.css" %} rel="stylesheet" type="text/css">
   </head>
 <body class="font-mono">
 {% include 'navbar.html' %}
-    <main>
-        <div class="grid place-items-center my-20">
+    <main class="mx-[5vw]">
+        <div class="my-20">
             <div class="w-full max-w-[80vw]">
-            <p class="text-[4vh] font-bold font-sans">Split bills, track who owes you!</p>
+            <p class="text-[4vh] font-bold">Split bills, track who owes you!</p>
         <form method="POST" class="my-20 flex flex-wrap justify-evenly gap-5 text-[2vh]" action="bills" class="p-6">
             {% csrf_token %}
             <div>
@@ -22,15 +23,17 @@
             </div>
             <div>
             <label>Debted People:</label>
-            <input class="p-1 rounded bg-gray-100" placeholder="suresh,ramesh,mahesh,..." type="input" name="people" id="billPeople" />
+            <input class="p-1 rounded bg-gray-100" placeholder="username1,username2,..." type="input" name="people" id="billPeople" />
             </div>
-            <input type="submit" class="rounded bg-green-400 p-2 text-white" value="Create" />
+            <input type="submit" class="rounded bg-green-400 p-2 bg-white text-black border border-black hover:bg-black hover:text-white" value="Create" />
             </form>
             </div>
 
-            <div id="tables" class="mx-10 md:px-0 max-w-[80vw] flex flex-wrap gap-10 justify-evenly">
+            <div id="tables" class="md:px-0 max-w-[80vw] flex flex-wrap gap-10 justify-evenly">
             <div class="w-full overflow-auto" id="created-bills">
-            <p class="text-[4vh] py-2 font-bold font-sans">Your Created Bills</p>
+            <p class="text-[4vh] py-2 font-bold">Your Created Bills</p>
+            <hr class="my-2"/>
+            {% if created_bills.count > 0 %}
                 <table class="w-full text-[2vh] text-left rtl:text-right text-gray-500 my-10">
                     <thead class="text-[2vh] text-gray-700 uppercase bg-gray-50">
                         <tr>
@@ -88,9 +91,14 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                {% else %}
+                <p class="text-gray-600 text-[2vh]">You haven't split any bills yet</p>
+                {% endif %}
             </div>
             <div class="overflow-auto w-full" id="pending-bills">
-                <p class="py-2 text-[4vh] font-bold font-sans">Your Pending Bills</p>
+                <p class="py-2 text-[4vh] font-bold">Your Pending Bills</p>
+                <hr class="my-2"/>
+                {% if pending_bills.count > 0 %}
                 <table class="w-full text-[2vh] text-left rtl:text-right text-gray-500 my-10">
                     <thead class="text-[2vh] text-gray-700 uppercase bg-gray-50">
                         <tr>
@@ -148,6 +156,9 @@
                         {% endfor %}
                     </tbody>
             </table>
+            {% else %}
+            <p class="text-gray-600 text-[2vh]">No pending bills</p>
+            {% endif %}
         </div>
     </div>
     </main>

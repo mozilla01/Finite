@@ -1,5 +1,5 @@
 <dialog
-  class="modal fixed rounded-md border-2 border-black p-2 backdrop:bg-slate-200 backdrop:bg-opacity-50"
+  class="modal fixed rounded-md border shadow-2xl border-black p-2 backdrop:bg-slate-200 backdrop:bg-opacity-50"
   id="createCategoryModal"
 >
   <button class="closeBtn border px-1 hover:bg-black hover:text-white">
@@ -12,8 +12,10 @@
     class="p-6"
   >
     {% csrf_token %}
+    <h1 class="text-[3vh]">Create Category</h1>
+    <hr class="py-4"/>
     <label>Category:</label>
-    <input type="text" name="category" id="categoryName" />
+    <input type="text" name="category" class="bg-gray-300 p-2" id="categoryName" placeholder="category name..." />
     <input
       type="hidden"
       value="{{request.user.id}}"
@@ -22,7 +24,7 @@
     />
     <input
       type="submit"
-      class="rounded bg-green-400 p-2 text-white"
+      class="rounded bg-slate-700 hover:bg-black p-2 text-white"
       value="Create"
     />
   </form>

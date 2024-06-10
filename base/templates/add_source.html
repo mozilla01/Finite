@@ -1,5 +1,5 @@
 <dialog
-  class="modal fixed rounded-md border-2 border-black p-2 backdrop:bg-slate-200 backdrop:bg-opacity-50"
+  class="modal fixed rounded-md border shadow-2xl border-black p-2 backdrop:bg-slate-200 backdrop:bg-opacity-50"
   id="addSourceModal"
 >
   <button class="closeBtn border px-1 hover:bg-black hover:text-white">
@@ -7,8 +7,10 @@
   </button>
   <form method="POST" action="add_source" id="addSourceForm" class="p-6">
     {% csrf_token %}
+    <h1 class="text-[3vh]">Add Source</h1>
+    <hr class="py-4" />
     <label>Source:</label>
-    <input type="text" name="source" id="sourceName" />
+    <input type="text" name="source" class="p-2 bg-gray-300" id="sourceName" placeholder="Source name..." />
     <input
       type="hidden"
       value="{{request.user.id}}"
@@ -17,7 +19,7 @@
     />
     <input
       type="submit"
-      class="rounded bg-green-400 p-2 text-white hover:bg-green-500"
+      class="rounded bg-gray-700 hover:bg-black p-2 text-white"
       value="Add"
     />
   </form>

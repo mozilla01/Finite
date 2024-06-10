@@ -135,11 +135,6 @@ class Profile(LoginRequiredMixin, View):
         }
         return render(request, 'profile.html', context=context)
 
-    def post(self, request):
-        user = request.user
-        user.pfp = request.FILES['pfp']
-        user.save()
-        return redirect('profile')
 
 def signup(request):
     if request.method == 'POST':
@@ -173,6 +168,7 @@ def login_user(request):
             return render(request, 'login.html')
     else:
         return render(request, 'login.html')
+
 
 @login_required(login_url='login')
 def logout_user(request):
@@ -292,8 +288,8 @@ class UpdateProfile(LoginRequiredMixin, APIView):
         if serializer.is_valid():
             print(serializer.data)
             data = serializer.data
+            user = User.objects.get(id=request.user.id)
             if 'startBal' in data:
-                user = User.objects.get(id=request.user.id)
                 user.starting_balance = data['startBal']
                 user.balance = data['startBal']
                 user.save()
@@ -302,6 +298,9 @@ class UpdateProfile(LoginRequiredMixin, APIView):
                     category_obj = Category.objects.get(id=int(category))
                     category_obj.budget = data['categories'][category]
                     category_obj.save()
+            if 'pfp' in data:
+                user.pfp = data['pfp']
+                user.save()
             return Response(serializer.data, status=200)
         else:
             print(serializer.errors)

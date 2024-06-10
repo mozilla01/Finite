@@ -100,31 +100,76 @@ def generate_graphs(user, start_date, end_date):
 
     # Render table
     table_html = ''
+    mobile_html = ''
 
-    for transaction in transactions:
-        if transaction.type == "E":
-            table_html += f'<tr class="border hover:bg-gray-300 cursor-pointer" onclick="showTransactionDetails({transaction.id}, {transaction.amount}, \'\', {transaction.category.id}, \'{transaction.description}\', \'{transaction.date}\', \'{transaction.receipt}\')">'
-        else:
-            table_html += f'<tr class="border hover:bg-gray-300 cursor-pointer" onclick="showTransactionDetails({transaction.id}, {transaction.amount}, {transaction.source.id}, \'\', \'{transaction.description}\', \'{transaction.date}\', \'{transaction.receipt}\')">'
-        table_html += f'''
-        <td class="px-6 py-4">{transaction.id}</td>
-        <td class="px-6 py-4">{transaction.date}</td>
-        '''
-        if transaction.type == "E":
+    if transactions.count() > 0:
+        for transaction in transactions:
+            if transaction.type == "E":
+                table_html += f'<tr class="border hover:bg-gray-300 cursor-pointer" onclick="showTransactionDetails({transaction.id}, {transaction.amount}, \'\', {transaction.category.id}, \'{transaction.description}\', \'{transaction.date}\', \'{transaction.receipt}\')">'
+                mobile_html += f'<div class="flex gap-4 p-4 border border-gray-900 w-full rounded sm:hidden bg-gradient-to-r from-red-200 via-orange-200 to-red-400" onclick="showTransactionDetails({transaction.id}, {transaction.amount}, \'\', {transaction.category.id}, \'{transaction.description}\', \'{transaction.date}\', \'{transaction.receipt}\')">'
+            else:
+                table_html += f'<tr class="border hover:bg-gray-300 cursor-pointer" onclick="showTransactionDetails({transaction.id}, {transaction.amount}, {transaction.source.id}, \'\', \'{transaction.description}\', \'{transaction.date}\', \'{transaction.receipt}\')">'
+                mobile_html += f'<div class="flex gap-4 p-4 border border-gray-900 w-full rounded sm:hidden bg-gradient-to-r from-red-200 via-orange-200 to-red-400" onclick="showTransactionDetails({transaction.id}, {transaction.amount}, {transaction.source.id}, \'\', \'{transaction.description}\', \'{transaction.date}\', \'{transaction.receipt}\')">'
             table_html += f'''
-            <td class="px-6 py-4 text-red-600">{transaction.amount}</td>
-            <td class="px-6 py-4">{transaction.category.name}</td>
+            <td class="px-6 py-4">{transaction.id}</td>
+            <td class="px-6 py-4">{transaction.date}</td>
             '''
-        else:
+            if transaction.type == "E":
+                table_html += f'''
+                <td class="px-6 py-4 text-red-600">{transaction.amount}</td>
+                <td class="px-6 py-4">{transaction.category.name}</td>
+                '''
+                mobile_html += f'''
+                                        <div class="basis-1/4">
+                                        <div class="text-slate-500">ID</div>
+                                        <div class="text-slate-500">Date</div>
+                                        <div class="text-slate-500">Amount</div>
+                                        <div class="text-slate-500">Category</div>
+                                        <div class="text-slate-500">Desc</div>
+                                        <div class="text-slate-500">Initial bal.</div>
+                                        </div>
+                                        <div class="basis-3/4">
+                                        <div>{transaction.id}</div>
+                                        <div>{transaction.date}</div>
+                                        <div>{transaction.amount}</div>
+                                        <div>{transaction.category.name}</div>
+                                        <div>{transaction.description}</div>
+                                        <div>{transaction.init_balance}</div>
+                                        </div>
+                                    </div> 
+                '''
+            else:
+                table_html += f'''
+                <td class="px-6 py-4 text-green-600">{transaction.amount}</td>
+                <td class="px-6 py-4">{transaction.source.name}</td>
+                '''
+                mobile_html += f'''
+                                        <div class="basis-1/4">
+                                        <div class="text-slate-500">ID</div>
+                                        <div class="text-slate-500">Date</div>
+                                        <div class="text-slate-500">Amount</div>
+                                        <div class="text-slate-500">Source</div>
+                                        <div class="text-slate-500">Desc</div>
+                                        <div class="text-slate-500">Initial bal.</div>
+                                        </div>
+                                        <div class="basis-3/4">
+                                        <div>{transaction.id}</div>
+                                        <div>{transaction.date}</div>
+                                        <div>{transaction.amount}</div>
+                                        <div>{transaction.source.name}</div>
+                                        <div>{transaction.description}</div>
+                                        <div>{transaction.init_balance}</div>
+                                        </div>
+                                    </div> 
+                '''
             table_html += f'''
-            <td class="px-6 py-4 text-green-600">{transaction.amount}</td>
-            <td class="px-6 py-4">{transaction.source.name}</td>
+            <td class="px-6 py-4">{transaction.description}</td>
+            <td class="px-6 py-4 text-black">{transaction.init_balance}</td>
+            </tr>
             '''
-        table_html += f'''
-        <td class="px-6 py-4">{transaction.description}</td>
-        <td class="px-6 py-4 text-black">{transaction.init_balance}</td>
-        </tr>
-        '''
+    else:
+        table_html = '<p class="text-gray-600">No transactions to display</p>'
+        mobile_html = '<p class="text-gray-600">No transactions to display</p>'
 
     # Category budgets 
     category_balances = []
@@ -159,7 +204,8 @@ def generate_graphs(user, start_date, end_date):
         'savings': savings_html,
         'category_budgets': category_budgets_html,
         'budget_overrun': budget_overrun,
-        'table': table_html
+        'table': table_html,
+        'mobile': mobile_html
     }
     
     return context

@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
   <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     {% load static %}
     <title>Home</title>
     <link href={% static "styles.css" %} rel="stylesheet" type="text/css">
@@ -12,8 +13,8 @@
             <div class="p-4">
                 <div class="flex flex-wrap justify-evenly gap-10">
                     <div class="grid place-items-center mr-4">
-                        <img class="rounded-full md:max-w-[100px]" src="{{request.user.pfp}}" alt="User Avatar">
-                        <input type="file" class="mt-2 block" accept="image/*">
+                        <img class="rounded-full md:max-w-[100px]" id="pfp" src="{{request.user.pfp}}" alt="User Avatar">
+                        <input type="file" id="pfp-inp" class="mt-2 block" accept="image/*">
                     </div>
                     <div class="w-full grid place-items-center">
                         <h2 class="font-semibold text-gray-800">{{request.user.username}}</h2>

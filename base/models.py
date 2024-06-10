@@ -13,6 +13,7 @@ class User(AbstractUser):
     balance = models.IntegerField(default=0, blank=True)
     pfp = models.ImageField(upload_to='profile_pictures/', default='static/images/default_pfp.webp')
 
+
 class Category(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=50)

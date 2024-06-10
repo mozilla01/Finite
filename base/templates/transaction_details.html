@@ -1,5 +1,5 @@
 <dialog
-  class="modal fixed rounded-md border-2 border-black p-2 backdrop:bg-slate-200 backdrop:bg-opacity-50"
+  class="modal fixed rounded-md border shadow-2xl border-black p-2 backdrop:bg-slate-200 backdrop:bg-opacity-50"
   id="transaction-details"
 >
   <button class="closeBtn border px-1 hover:bg-black hover:text-white">
@@ -24,6 +24,8 @@
     id="transac-ud-form"
     class="space-y-4 p-6"
   >
+  <h1 class="text-[3vh]">Details</h1>
+  <hr />
     <input
       type="hidden"
       value="{{request.user.id}}"
@@ -34,20 +36,20 @@
     <div class="flex flex-col md:flex-row">
       <label class="mr-2 p-1 font-bold uppercase">Amount: </label>
       <input
-        class="rounded bg-gray-200 p-1"
+        class="rounded bg-gray-200 p-2"
         type="number"
         name="amount"
         id="transacAmount"
       />
     </div>
     <div class="flex flex-col md:flex-row">
-      <label class="font-bold uppercase">Category: </label>
-      <select id="transacCategory" name="category" class="min-w-[100px]">
+      <label class="font-bold uppercase">Category/Source: </label>
+      <select id="transacCategory" class="p-2" name="category" class="min-w-[100px]">
         {% for category in categories %}
         <option value="{{category.id}}">{{category.name}}</option>
         {% endfor %}
       </select>
-      <select id="transacSource" name="source" class="min-w-[100px]">
+      <select id="transacSource" class="p-2" name="source" class="min-w-[100px]">
         {% for source in sources%}
         <option value="{{source.id}}">{{source.name}}</option>
         {% endfor %}
@@ -55,12 +57,12 @@
     </div>
     <div class="flex flex-col md:flex-row">
       <label class="p-1 font-bold uppercase">Date: </label>
-      <input class="bg-gray-200 p-1" type="date" name="date" id="transacDate" />
+      <input class="bg-gray-200 p-2" type="date" name="date" id="transacDate" />
     </div>
     <div class="flex flex-col md:flex-row">
       <label class="p-1 font-bold uppercase">Description: </label>
       <input
-        class="bg-gray-200 p-1"
+        class="bg-gray-200 p-2"
         type="text"
         name="description"
         id="transacDescription"
@@ -70,7 +72,7 @@
       <label class="p-1 font-bold uppercase">Receipt: </label>
       <a id="expenseReceiptLink" href="" class="underline text-blue-500">View Receipt</a>
       <input
-        class="bg-gray-200 p-1"
+        class="bg-gray-200 p-2"
         type="file"
         name="receipt"
         id="transacReceipt"
@@ -79,7 +81,7 @@
     <input
       type="submit"
       value="Update"
-      class="rounded bg-black p-1 text-white"
+      class="rounded bg-black p-2 text-white"
     />
   </form>
 </dialog>
