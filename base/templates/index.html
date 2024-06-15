@@ -14,14 +14,14 @@
                 <h1 class="text-[5vh] font-bold font-sans">Dashboard</h1>
                 <p class="my-2">{{ user.username }}'s expenses, income and savings</p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <div class="flex flex-wrap w-full justify-evenly mb-4 md:border-r border-gray-400">
-                        <div class="py-10">
-                            <p class="text-center my-10 text-[4vh] font-sans">Quick actions</p>
+                    <div class="flex flex-wrap w-full justify-evenly mb-4 md:border-r border-black">
+                        <div class="py-10 w-full md:w-auto">
+                            <p class="md:text-center my-10 text-[4vh] font-sans">Quick actions</p>
                             <div class="grid grid-cols-2 grid-rows-2 justify-center gap-[2vw]">
-                                <button class="bg-white text-black hover:bg-slate-600 border border-black text-white p-2 rounded openBtn my-2">Create Category</button>
-                                <button class="bg-white text-black hover:bg-slate-600 border border-black text-white p-2 rounded openBtn my-2">Add Source</button>
-                                <button class="bg-white text-black hover:bg-slate-600 border border-black text-white p-2 rounded openBtn my-2">Add Expense</button>
-                                <button class="bg-white text-black hover:bg-slate-600 border border-black text-white p-2 rounded openBtn my-2">Add Income</button>
+                                <button class="text-black bg-white hover:scale-105 transition-transform transition-500 ease-in-out border-2 border-black p-2 rounded openBtn my-2">Create Category</button>
+                                <button class="bg-white text-black hover:scale-105 transition-transform transition-500 ease-in-out border-2 border-black p-2 rounded openBtn my-2">Add Source</button>
+                                <button class="bg-white text-black hover:scale-105 transition-transform transition-500 ease-in-out border-2 border-black p-2 rounded openBtn my-2">Add Expense</button>
+                                <button class="bg-white text-black hover:scale-105 transition-transform transition-500 ease-in-out border-2 border-black p-2 rounded openBtn my-2">Add Income</button>
                             </div>
                         </div>
                         {% include 'create_category.html' %}
@@ -29,7 +29,7 @@
                         {% include 'add_expense.html' %}
                         {% include 'add_income.html' %}
                     </div>
-                    <div class="p-10">
+                    <div class="md:p-10">
                         <p class="text-[3vh] font-sans">Overview</p>
                         {% if user.balance < 0 %}<p class="text-red-400 font-bold">You balance is running in negative.</p>{% endif %}
                         {% for category in budget_overrun %}
@@ -42,13 +42,13 @@
                     <div class="w-full">
                         <p class="text-[3vh] font-sans">Transactions</p>
                         <form id="date-range" class="my-4">
-                            <input class="border md:border-b border-black p-2"
+                            <input class="border-2 border-black p-2 rounded"
                                    type="date"
                                    name="first-date"
                                    value="{{ first_date|date:'Y-m-d' }}"
                                    id="start-date" />
                             to
-                            <input class="border md:border-b border-black p-2"
+                            <input class="border-2 border-black p-2 rounded"
                                    type="date"
                                    name="sec-date"
                                    value="{{ second_date|date:'Y-m-d' }}"
@@ -56,7 +56,7 @@
                             <input type="submit"
                                    value="Filter"
                                    id="filter-btn"
-                                   class="p-2 rounded bg-white text-black border border-black hover:bg-black hover:text-white" />
+                                   class="p-2 rounded bg-white text-black border-2 my-2 border-black hover:bg-black hover:text-white" />
                         </form>
                         <div class="overflow-x-scroll max-h-[50vh] hidden sm:block border border-black rounded-md">
                             <table class="table-auto border-collapse my-6 w-full text-[2vh] text-left rtl:text-right">
@@ -93,13 +93,14 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <div id="mob-transac" class="space-y-4">
+                            <div id="mob-transac" class="space-y-4 sm:hidden">
                                 <!-- Transactions container for mobile -->
                             </div>
                         </div>
                     </div>
                     <div>
-                        <div class="grid grid-cols-1 md:grid-cols-2" id="graphs">
+                        <p class="text-[3vh] my-10 font-sans">Graphs</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2" id="graphs">
                             <img src="{% static 'images/loading.gif' %}" alt="Expense Pie Chart" />
                             <img src="{% static 'images/loading.gif' %}" alt="Income pie chart" />
                             <img src="{% static 'images/loading.gif' %}" alt="Mixed bar graph" />

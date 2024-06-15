@@ -102,11 +102,11 @@ const renderGraphs = async () => {
     data = JSON.parse(data);
     const graphsDiv = document.getElementById("graphs");
     graphsDiv.innerHTML = "";
-    graphsDiv.innerHTML += "<div>" + data.expense_pie + "</div>";
-    graphsDiv.innerHTML += "<div>" + data.income_pie + "</div>";
-    graphsDiv.innerHTML += "<div>" + data.mixed_bar + "</div>";
-    graphsDiv.innerHTML += "<div>" + data.category_budgets + "</div>";
-    graphsDiv.innerHTML += "<div>" + data.savings + "</div>";
+    graphsDiv.innerHTML += "<div class=\"border border-black rounded-md overflow--x-scroll \">" + data.expense_pie + "</div>";
+    graphsDiv.innerHTML += "<div class=\"border border-black rounded-md overflow--x-scroll \">" + data.income_pie + "</div>";
+    graphsDiv.innerHTML += "<div class=\"border border-black rounded-md overflow--x-scroll \">" + data.mixed_bar + "</div>";
+    graphsDiv.innerHTML += "<div class=\"border border-black rounded-md overflow--x-scroll \">" + data.category_budgets + "</div>";
+    graphsDiv.innerHTML += "<div class=\"border border-black rounded-md overflow--x-scroll \">" + data.savings + "</div>";
     document.getElementById("transaction-table").innerHTML = data.table;
     document.getElementById("mob-transac").innerHTML = data.mobile;
     nodeScriptReplace(graphsDiv);
@@ -266,6 +266,7 @@ document
             }
             const data = await response.json();
             console.log(data);
+            document.getElementById("transacReceipt").value = null;
             document.getElementById("transaction-details").close();
             renderGraphs();
         } catch (error) {
@@ -299,6 +300,7 @@ document
             const data = await response.json();
             document.getElementById("categorySelectExpenseForm").innerHTML =
                 data;
+            document.getElementById("categoryName").value = '';
             document.getElementById("createCategoryModal").close();
         } catch (error) {
             console.error(error);
@@ -330,6 +332,7 @@ document
             const data = await response.json();
             console.log(data);
             document.getElementById("sourceSelectIncomeForm").innerHTML = data;
+            document.getElementById("sourceName").value = '';
             document.getElementById("addSourceModal").close();
         } catch (error) {
             console.error(error);
@@ -377,6 +380,7 @@ document
             }
             const data = await response.json();
             console.log(data);
+            document.getElementById("expenseReceipt").value = null;
             document.getElementById("addExpenseModal").close();
             renderGraphs();
         } catch (error) {
